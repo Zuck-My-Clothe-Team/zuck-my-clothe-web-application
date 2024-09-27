@@ -1,0 +1,70 @@
+stages:
+  - prepare
+  - build
+  - deploy
+
+image: node:latest
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+
+before_script:
+  - npm ci
+
+unit_test:
+  stage: prepare
+  cache:
+    policy: pull
+  script:
+    - npm run test
+
+eslint:
+  stage: prepare
+  cache:
+    policy: pull
+  script:
+    - npm run lint
+
+build:
+  stage: build
+  cache:
+    policy: pull
+  dependencies:
+    - unit_test
+    - eslint
+  script:
+    - npm run build
+
+deploy_preview:
+  stage: deploy
+  dependencies:
+    - build
+  needs:
+    - build
+  when: manual
+  allow_failure: true
+  cache:
+    policy: pull
+  script:
+    - npm i -g add vercel
+    - vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
+    - vercel build --token=$VERCEL_TOKEN
+    - vercel deploy --prebuilt  --token=$VERCEL_TOKEN
+
+deploy_production:
+  stage: deploy
+  only:
+    - main
+  dependencies:
+    - build
+  needs:
+    - build
+  cache:
+    policy: pull
+  script:
+    - npm i -g add vercel
+    - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+    - vercel build --prod --token=$VERCEL_TOKEN
+    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
