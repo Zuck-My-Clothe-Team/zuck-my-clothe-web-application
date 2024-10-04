@@ -10,11 +10,17 @@ cache:
   paths:
     - node_modules/
 
-before_script:
-  - npm ci
+install:
+  stage: .pre
+  cache:
+    policy: pull-push
+  script:
+    - npm ci
 
 unit_test:
   stage: prepare
+  needs:
+    - install
   cache:
     policy: pull
   script:
@@ -22,6 +28,8 @@ unit_test:
 
 eslint:
   stage: prepare
+  needs:
+    - install
   cache:
     policy: pull
   script:
