@@ -11,7 +11,7 @@ function App() {
   return (
     <div className="h-screen flex">
       <div className="m-auto">
-        <h4 className="text-bold text-2xl">Hello</h4>
+        <h4 className="text-bold text-2xl">Hello สวัสดี</h4>
         <DatePicker />
         {accessToken === "" ? (
           <LoginForm />
