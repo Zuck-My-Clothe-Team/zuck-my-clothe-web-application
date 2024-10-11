@@ -31,18 +31,25 @@ const LoginForm = () => {
   };
   return (
     <div className="w-full">
-      <Form form={form} name="login" onFinish={onFinish} scrollToFirstError>
+      <Form
+        form={form}
+        name="login"
+        onFinish={onFinish}
+        scrollToFirstError
+        layout="vertical"
+      >
         <Form.Item
+          label="อีเมล"
           name="email"
           hasFeedback
           rules={[
             {
               type: "email",
-              message: "The input is not valid e-mail!",
+              message: "กรุณากรอกอีเมลให้ถูกต้อง",
             },
             {
               required: true,
-              message: "Please input your e-mail!",
+              message: "กรุณากรอกอีเมล",
             },
           ]}
         >
@@ -50,23 +57,24 @@ const LoginForm = () => {
             name="email"
             size="large"
             prefix={<LuUser2 className="text-primary" />}
-            placeholder="Email"
+            placeholder="อีเมล"
           />
         </Form.Item>
         <Form.Item
+          label="รหัสผ่าน"
           name="password"
           hasFeedback
           rules={[
             {
               required: true,
-              message: "Please input your password!",
+              message: "กรุณากรอกรหัสผ่าน",
             },
           ]}
         >
           <Input.Password
             size="large"
             prefix={<IoLockClosedOutline className="text-primary" />}
-            placeholder="Password"
+            placeholder="รหัสผ่าน"
           />
         </Form.Item>
 
@@ -76,7 +84,7 @@ const LoginForm = () => {
             disabled={isLoading}
             className="bg-blue-500 text-white px-6 py-2 rounded-sm text-lg disabled:bg-blue-300/60"
           >
-            Sign in
+            Login
           </button>
         </div>
       </Form>
