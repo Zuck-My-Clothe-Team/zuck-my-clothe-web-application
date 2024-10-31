@@ -1,130 +1,116 @@
-import { useState, useEffect, useRef } from 'react';
-import { HomeFilled, MehFilled, FundFilled, ToolFilled, SettingFilled, BulbFilled, FileExclamationFilled } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import { axiosInstance } from '../utils/axiosInstance';
-import { UserDetail } from '../interface/userdetail.interface';
+import {
+  HomeFilled,
+  MehFilled,
+  FundFilled,
+  ToolFilled,
+  SettingFilled,
+  BulbFilled,
+  FileExclamationFilled,
+} from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/auth.context";
+import { IoIosLogOut } from "react-icons/io";
 
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [activePage, setActivePage] = useState('Home');
-  const [userInfo, setUserInfo] = useState<UserDetail>({
-    user_id: '',
-    email: '',
-    name: '',
-    role: '',
-    surname: '',
-  });
-  const sidebarRef = useRef<HTMLDivElement>(null);
+  const auth = useAuth();
   const navigate = useNavigate();
 
-  const getProfile = async() => {
-    const response = await axiosInstance.get('/auth/me')
-    console.log(response.data)
-    setUserInfo(response.data.data)
-  } 
-
-  useEffect(() => {
-    getProfile()
-  },[]) 
-  
-  const handleMouseEnter = () => {
-    setIsOpen(true);
-  };
-
-  const handleClickOutside = (event: MouseEvent) => {
-    if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
-      setIsOpen(false);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  const handlePageChange = (page: string, path: string) => {
-    setActivePage(page);
-    navigate(path);
-  };
+  const sidebarItems = [
+    {
+      icon: <HomeFilled style={{ fontSize: "130%" }} />,
+      label: "Home Page",
+      path: "/home",
+    },
+    {
+      icon: <FundFilled style={{ fontSize: "130%" }} />,
+      label: "Dashboard",
+      path: "/dashboard",
+    },
+    {
+      icon: <ToolFilled style={{ fontSize: "130%" }} />,
+      label: "Machine",
+      path: "/machine",
+    },
+    {
+      icon: <MehFilled style={{ fontSize: "130%" }} />,
+      label: "Staff",
+      path: "/staff",
+    },
+    {
+      icon: <FileExclamationFilled style={{ fontSize: "130%" }} />,
+      label: "Report",
+      path: "/report",
+    },
+    {
+      icon: <BulbFilled style={{ fontSize: "130%" }} />,
+      label: "Help",
+      path: "/help",
+    },
+    {
+      icon: <SettingFilled style={{ fontSize: "130%" }} />,
+      label: "Settings",
+      path: "/settings",
+    },
+  ];
 
   return (
-    <div>
+    <div className="lg:w-[275px] xl:w-[350px] h-screen py-4">
       <div
-        className="fixed top-0 left-0 h-full w-1"
-        onMouseEnter={handleMouseEnter}
-      ></div>
-
-      <div
-        ref={sidebarRef}
-        className={`fixed top-4 left-0 h-[720px] bg-white rounded-lg text-gray-500 p-4 transition-transform duration-300 ease-in-out transform ${
-          isOpen ? 'translate-x-2' : '-translate-x-full'
-        }`}
+        className="relative h-full bg-white rounded-[30px] text-gray-500 p-4 transition-transform duration-300 ease-in-out transform lg:translate-x-2 xl:translate-x-4"
+        style={{ boxShadow: "0px 4px 14.2px 3px rgba(0, 0, 0, 0.25)" }}
       >
         <nav>
-          <img 
+          <img
             src="/images/logo-withname.png"
             alt="Logo"
-            className="w-64 h-full"
+            className="w-full h-full"
           />
 
           <ul className="space-y-1">
-            <li className={`p-2 rounded-md cursor-pointer whitespace-pre ${ activePage === 'Home' ? 'bg-sky-400 text-white' : 'hover:bg-gray-200'}`}
-              onClick={() => handlePageChange('Home', '/login')}
-            ><HomeFilled style={{ fontSize: '130%' }} /> Home Page</li>
-
-            <li className={`p-2 rounded-md cursor-pointer whitespace-pre ${ activePage === 'Dashboard' ? 'bg-sky-400 text-white' : 'hover:bg-gray-200'}`}
-              onClick={() => handlePageChange('Dashboard', '/DashboardPage')}
-            ><FundFilled style={{ fontSize: '130%' }} /> Dashboard</li>
-
-            <li className={`p-2 rounded-md cursor-pointer whitespace-pre ${ activePage === 'Machine' ? 'bg-sky-400 text-white' : 'hover:bg-gray-200'}`}
-              onClick={() => handlePageChange('Machine', '/MachinePage')}
-            ><ToolFilled style={{ fontSize: '130%' }} /> Machine</li>
-
-            <li className={`p-2 rounded-md cursor-pointer whitespace-pre ${ activePage === 'Staff' ? 'bg-sky-400 text-white' : 'hover:bg-gray-200'}`}
-              onClick={() => handlePageChange('Staff', '/StaffPage')}
-            ><MehFilled style={{ fontSize: '130%' }} /> Staff</li>
-
-            <li className={`p-2 rounded-md cursor-pointer whitespace-pre ${ activePage === 'Report' ? 'bg-sky-400 text-white' : 'hover:bg-gray-200'}`}
-              onClick={() => handlePageChange('Report', '/ReportPage')}
-            ><FileExclamationFilled style={{ fontSize: '130%' }} /> Report</li>
-
-            <li className={`p-2 rounded-md cursor-pointer whitespace-pre ${ activePage === 'Help' ? 'bg-sky-400 text-white' : 'hover:bg-gray-200'}`}
-              onClick={() => handlePageChange('Help', '/HelpPage')}
-            ><BulbFilled style={{ fontSize: '130%' }} /> Help</li>
-
-            <li className={`p-2 rounded-md cursor-pointer whitespace-pre ${ activePage === 'Setting' ? 'bg-sky-400 text-white' : 'hover:bg-gray-200'}`}
-              onClick={() => handlePageChange('Setting', '/SettingPage')}
-            ><SettingFilled style={{ fontSize: '130%' }} /> Setting</li>
+            {sidebarItems.map((item, index) => (
+              <li
+                key={index}
+                className={`px-2 py-2.5 rounded-md cursor-pointer whitespace-pre ${
+                  location.pathname.includes(item.path)
+                    ? "bg-sky-400 text-white"
+                    : "hover:bg-gray-200"
+                }`}
+                onClick={() => navigate(item.path)}
+              >
+                {item.icon} {item.label}
+              </li>
+            ))}
           </ul>
         </nav>
 
-
-        <div className="p-4 text-center border-t border-gray-300 mt-4">
-          {userInfo ? (
-            <>
-              <p className="font-semibold text-lg">{userInfo.name} {userInfo.surname}</p>
-              <p className="text-sm text-gray-600">{userInfo.email}</p>
-            </>
-          ) : (
-            <p className="text-sm text-gray-600">Please log in</p>
-          )}
-        </div>
-
-        <div className="p-4 cursor-pointer" onClick={() => {
-            localStorage.removeItem("accessToken");
-            setUserInfo({
-              user_id: '',
-              email: '',
-              name: '',
-              role: '',
-              surname: '',
-
-            });
-          }}
-        >
-          LOGOUT
+        <div className="absolute transform lg:translate-x-2 xl:translate-x-4 bottom-6 w-full">
+          <div className="flex flex-row items-center lg:gap-x-2 xl:gap-x-4 w-full">
+            <div className="rounded-full bg-gray-400">
+              <img
+                src={auth?.authContext.profile_image_url}
+                className="lg:size-10 xl:size-14 rounded-full"
+                alt="Profile"
+              />
+            </div>
+            <div className="flex flex-col">
+              <div className="text-lg text-text-3">
+                {auth?.authContext.name.toUpperCase()}{" "}
+                {auth?.authContext.surname.substring(0, 4).toUpperCase()}
+              </div>
+              <div className="text-sm text-text-4">
+                {auth?.authContext.email}
+              </div>
+            </div>
+            <div>
+              <IoIosLogOut
+                className="size-8 cursor-pointer"
+                onClick={async () => {
+                  await auth?.logout();
+                  navigate("/");
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

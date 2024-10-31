@@ -2,6 +2,7 @@ import { Form, Input } from "antd";
 import { useState } from "react";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { LuUser2 } from "react-icons/lu";
+import { useNavigate } from "react-router-dom";
 import { Login } from "../api/auth.api";
 import { IUserDetail } from "../interface/userdetail.interface";
 import { axiosInstance } from "../utils/axiosInstance";
@@ -10,18 +11,18 @@ import { SwalError, SwalSuccess } from "../utils/swal";
 const LoginForm = () => {
   const [form] = Form.useForm();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const onFinish = async () => {
     try {
       setIsLoading(true);
       const values = await form.validateFields();
       const response = await Login(values.email, values.password);
-      console.log(response);
       const userDetail: IUserDetail = response;
       localStorage.setItem("accessToken", userDetail.token);
       axiosInstance.defaults.headers.Authorization = `Bearer ${userDetail.token}`;
       SwalSuccess("เข้าสู่ระบบสำเร็จ", "กำลังเปลี่ยนเส้นทาง");
-      window.location.reload();
+      navigate("home");
       setIsLoading(false);
     } catch (err) {
       SwalError("เข้าสู่ระบบไม่สำเร็จ", "กรุณาลองใหม่ภายหลัง");

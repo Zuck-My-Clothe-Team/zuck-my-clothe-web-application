@@ -9,4 +9,6 @@ export interface UserDetail {
   name: string;
   role: string;
   surname: string;
+  phone: string;
+  profile_image_url: string;
 }
