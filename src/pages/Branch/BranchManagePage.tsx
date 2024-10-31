@@ -39,10 +39,10 @@ const columns = [
   },
   {
     render: () => (
-      <div className="flex flex-row gap-x-4">
-        <AiFillMail className="size-6 text-primaryblue-100" />
-        <AiFillEdit className="size-6 text-primaryblue-100" />
-        <AiTwotoneDelete className="size-6 text-primaryblue-100" />
+      <div className="flex flex-row gap-x-4 text-primaryblue-100">
+        <AiFillMail className="size-6 cursor-pointer" />
+        <AiFillEdit className="size-6 cursor-pointer" />
+        <AiTwotoneDelete className="size-6 cursor-pointer" />
       </div>
     ),
   },
