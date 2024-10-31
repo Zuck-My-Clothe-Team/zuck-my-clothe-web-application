@@ -6,15 +6,16 @@ import ProtectedLogin from "./components/auth/ProtectedLogin";
 import NotFoundPage from "./pages/NotFoundPage";
 import { ConfigProvider } from "antd";
 import { theme } from "./config/antdTheme";
+import BranchManagePage from "./pages/Branch/BranchManagePage";
 
 const AppPage = () => {
   return (
     <ProtectedLogin>
       <div className="flex gap-x-8">
-        <div className="lg:w-[275px] xl:w-[350px]">
+        <div className="lg:max-w-[275px] xl:max-w-[350px]">
           <Sidebar />
         </div>
-        <div className="w-full p-6">
+        <div className="w-full py-6 px-12">
           <Outlet />
         </div>
       </div>
@@ -29,7 +30,7 @@ function App() {
         <BrowserRouter basename="/">
           <Routes>
             <Route element={<AppPage />}>
-              <Route path="home" element={<></>} />
+              <Route path="home" element={<BranchManagePage />} />
               <Route path="dashboard" element={<>dashboard</>} />
               <Route path="machine" element={<>machine</>} />
               <Route path="staff" element={<>staff</>} />
