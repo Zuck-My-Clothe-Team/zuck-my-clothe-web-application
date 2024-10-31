@@ -94,8 +94,8 @@ const Sidebar = () => {
             </div>
             <div className="flex flex-col">
               <div className="text-lg text-text-3">
-                {auth?.authContext.name.toUpperCase()}{" "}
-                {auth?.authContext.surname.substring(0, 4).toUpperCase()}
+                {auth?.authContext.firstname.toUpperCase()}{" "}
+                {auth?.authContext.lastname.substring(0, 4).toUpperCase()}
               </div>
               <div className="text-sm text-text-4">
                 {auth?.authContext.email}

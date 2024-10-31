@@ -29,7 +29,6 @@ const ProtectedLogin: React.FC<Props> = ({ children }) => {
       }
 
       const UserDetail = result.data as IUserDetail;
-      console.log(UserDetail);
       auth?.setAuthContext(UserDetail.data);
 
       setIsLogin(true);

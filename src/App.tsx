@@ -7,6 +7,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import { ConfigProvider } from "antd";
 import { theme } from "./config/antdTheme";
 import BranchManagePage from "./pages/Branch/BranchManagePage";
+import UsersManagePage from "./pages/Users/UsersManagePage";
 
 const AppPage = () => {
   return (
@@ -33,7 +34,7 @@ function App() {
               <Route path="home" element={<BranchManagePage />} />
               <Route path="dashboard" element={<>dashboard</>} />
               <Route path="machine" element={<>machine</>} />
-              <Route path="staff" element={<>staff</>} />
+              <Route path="staff" element={<UsersManagePage />} />
               <Route path="report" element={<>report</>} />
               <Route path="help" element={<>help</>} />
               <Route path="settings" element={<>settings</>} />

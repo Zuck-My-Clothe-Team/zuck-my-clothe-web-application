@@ -4,9 +4,9 @@ import { UserDetail } from "../interface/userdetail.interface";
 export const initialAuth: UserDetail = {
   user_id: "",
   email: "",
-  name: "",
+  firstname: "",
   role: "",
-  surname: "",
+  lastname: "",
   profile_image_url: "",
   phone: "",
 };
