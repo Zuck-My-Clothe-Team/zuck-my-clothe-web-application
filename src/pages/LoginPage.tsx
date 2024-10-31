@@ -2,7 +2,7 @@ import LoginForm from "../components/LoginForm";
 
 const LoginPage = () => {
   return (
-    <div className="bg-primaryblue-300 h-screen flex">
+    <div className="h-screen flex">
       <div className="m-auto w-[60%]">
         <div className="relative">
           <img src="/images/loginFormBG.png" className="w-full z-[0]" />
