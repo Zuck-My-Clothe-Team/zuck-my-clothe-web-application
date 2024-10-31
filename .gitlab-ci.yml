@@ -11,21 +11,21 @@ cache:
     - node_modules/
 
 before_script:
-  - npm i
+  - yarn install --frozen-lockfile
 
 unit_test:
   stage: prepare
   cache:
     policy: pull
   script:
-    - npm run test
+    - yarn test
 
 eslint:
   stage: prepare
   cache:
     policy: pull
   script:
-    - npm run lint
+    - yarn lint
 
 build:
   stage: build
@@ -35,7 +35,7 @@ build:
     - unit_test
     - eslint
   script:
-    - npm run build
+    - yarn build
 
 deploy_preview:
   stage: deploy
@@ -48,7 +48,7 @@ deploy_preview:
   cache:
     policy: pull
   script:
-    - npm i -g add vercel
+    - yarn add vercel
     - vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
     - vercel build --token=$VERCEL_TOKEN
     - vercel deploy --prebuilt  --token=$VERCEL_TOKEN
@@ -64,7 +64,7 @@ deploy_production:
   cache:
     policy: pull
   script:
-    - npm i -g add vercel
+    - yarn add vercel
     - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
     - vercel build --prod --token=$VERCEL_TOKEN
     - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
