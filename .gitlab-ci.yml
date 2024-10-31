@@ -48,10 +48,27 @@ deploy_preview:
   cache:
     policy: pull
   script:
-    - yarn add vercel
+    - yarn global add vercel
     - vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
     - vercel build --token=$VERCEL_TOKEN
-    - vercel deploy --prebuilt  --token=$VERCEL_TOKEN
+    - DEPLOY_OUTPUT=$(vercel deploy --prebuilt --token=$VERCEL_TOKEN)
+    - DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -o 'https://[^ ]*')
+    - |
+      MERGE_REQUEST_IID=$(curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+      "https://git.cpe.kmutt.ac.th/api/v4/projects/$CI_PROJECT_ID/merge_requests?source_branch=$CI_COMMIT_REF_NAME" | sed -n 's/.*"iid":\([0-9]*\).*/\1/p' | head -n 1)
+
+    - |
+      echo "COMMIT REF : $CI_COMMIT_REF_NAME"
+      echo "Project ID: $CI_PROJECT_ID"
+      echo "Merge Request IID: $MERGE_REQUEST_IID"
+      echo "Deployment URL: $DEPLOY_URL"
+    - |
+      RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Authorization: Bearer $GITLAB_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d '{"body": "Preview available at: '"$DEPLOY_URL"'"}' \
+      "https://git.cpe.kmutt.ac.th/api/v4/projects/$CI_PROJECT_ID/merge_requests/$MERGE_REQUEST_IID/notes")
+      echo "Curl Response: $RESPONSE"
+
 
 deploy_production:
   stage: deploy
@@ -64,7 +81,7 @@ deploy_production:
   cache:
     policy: pull
   script:
-    - yarn add vercel
+    - yarn global add vercel
     - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
     - vercel build --prod --token=$VERCEL_TOKEN
     - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
