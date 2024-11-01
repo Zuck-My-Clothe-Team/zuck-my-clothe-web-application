@@ -12,9 +12,18 @@ export const theme: ThemeConfig = {
     fontWeightStrong: 400,
   },
   components: {
+    Modal: {
+      contentBg: "#F9FAFF",
+      headerBg: "#F9FAFF",
+      footerBg: "#F9FAFF",
+    },
+    Button: {
+      borderRadius: 2,
+    },
     Form: {
       verticalLabelPadding: 0,
       itemMarginBottom: 4,
+      labelFontSize: 18,
     },
     Table: {
       cellFontSize: 16,
@@ -23,6 +32,9 @@ export const theme: ThemeConfig = {
       rowSelectedBg: "#F1F1F1",
       headerSplitColor: "#BDE2FF",
       headerBorderRadius: 0,
+    },
+    Input: {
+      borderRadius: 4,
     },
   },
 };

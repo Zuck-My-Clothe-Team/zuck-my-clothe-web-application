@@ -12,11 +12,11 @@ import UsersManagePage from "./pages/Users/UsersManagePage";
 const AppPage = () => {
   return (
     <ProtectedLogin>
-      <div className="flex gap-x-8">
-        <div className="lg:max-w-[275px] xl:max-w-[350px]">
+      <div className="flex flex-row gap-x-4 lg:gap-x-8 w-screen">
+        <div className="w-[70px] lg:w-[250px] xl:w-[350px]">
           <Sidebar />
         </div>
-        <div className="w-full py-6 px-12">
+        <div className="py-6 px-4 lg:px-12 w-full">
           <Outlet />
         </div>
       </div>
