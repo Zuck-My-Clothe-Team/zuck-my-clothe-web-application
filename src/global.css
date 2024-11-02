@@ -9,3 +9,12 @@ html {
     font-family: 'Noto Sans','Kanit', sans-serif;
     background-color: #F9FAFF;
 }
+
+/* styles.css */
+.select-active .ant-select-selector {
+    @apply !bg-[#B0FFC8] !text-[#219506]
+}
+  
+.select-inactive .ant-select-selector {
+    @apply !bg-customred-1 !text-white
+}

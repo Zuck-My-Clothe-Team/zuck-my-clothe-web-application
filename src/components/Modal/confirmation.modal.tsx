@@ -8,6 +8,7 @@ interface ConfirmModalProps {
   onOk: () => void;
   onClose: () => void;
   variant?: "confirm" | "delete";
+  loading: boolean;
 }
 
 export const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -38,8 +39,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
               ? "bg-primaryblue-300 !text-white hover:!bg-primaryblue-100 hover:!border hover:!border-primaryblue-300"
               : "bg-customred-1 !text-white hover:!bg-red-600 hover:!border hover:!border-customred-1"
           }`}
+          loading={props.loading}
+          disabled={props.loading}
         >
-          {variant === "confirm" ? "ยืนยัน" : "ลบออก"}
+          {props.loading
+            ? "กำลังดำเนินการ..."
+            : variant === "confirm"
+            ? "ยืนยัน"
+            : "ลบออก"}
         </Button>,
       ]}
     >

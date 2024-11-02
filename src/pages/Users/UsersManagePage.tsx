@@ -180,6 +180,7 @@ const UsersManagePage = () => {
         }}
         onClose={() => setOpenDeleteModal(false)}
         variant="delete"
+        loading={loading}
       />
       <CreateUserModal
         isOpen={openCreateUserModal}

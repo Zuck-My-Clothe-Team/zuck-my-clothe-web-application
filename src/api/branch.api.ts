@@ -6,6 +6,16 @@ export async function GetAllBranch() {
   return result;
 }
 
+export async function GetBranchById(branchID: string) {
+  const result = await axiosInstance.get(`/branch/${branchID}`);
+  return result;
+}
+
+export async function GetOwnBranch() {
+  const result = await axiosInstance.get("/branch/owns");
+  return result;
+}
+
 export async function CreateBranch(data: IBranch) {
   const result = await axiosInstance.post("/branch/create", data);
   return result;

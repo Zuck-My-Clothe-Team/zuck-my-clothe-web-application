@@ -22,7 +22,7 @@ const LoginForm = () => {
       localStorage.setItem("accessToken", userDetail.token);
       axiosInstance.defaults.headers.Authorization = `Bearer ${userDetail.token}`;
       SwalSuccess("เข้าสู่ระบบสำเร็จ", "กำลังเปลี่ยนเส้นทาง");
-      navigate("home");
+      navigate("/manager/home");
       setIsLoading(false);
     } catch (err) {
       SwalError("เข้าสู่ระบบไม่สำเร็จ", "กรุณาลองใหม่ภายหลัง");
