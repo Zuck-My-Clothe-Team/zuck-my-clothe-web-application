@@ -1,48 +1,67 @@
-import { useMemo, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/auth.context";
+import { IUserDetail, Role } from "../../interface/userdetail.interface";
 import { CheckToken } from "../../api/auth.api";
-import { initialAuth, useAuth } from "../../context/auth.context";
-import { IUserDetail } from "../../interface/userdetail.interface";
 
-type Props = {
-  children: React.ReactNode;
-};
-
-const ProtectedLogin: React.FC<Props> = ({ children }) => {
-  const [isLogin, setIsLogin] = useState<boolean>(false);
-  const auth = useAuth();
+const ProtectedLogin: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("accessToken") || "";
+  const auth = useAuth();
 
-  useMemo(async () => {
-    try {
-      if (!token || token === "") {
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          navigate("/login");
+          return;
+        }
+
+        const result = await CheckToken();
+        const UserDetail = result.data as IUserDetail;
+
+        if (!UserDetail || !UserDetail.data || !UserDetail.data.role) {
+          localStorage.removeItem("accessToken");
+          navigate("/login");
+          return;
+        }
+
+        const userRole = UserDetail.data.role;
+        switch (userRole) {
+          case Role.Client:
+            localStorage.removeItem("accessToken");
+            navigate("/login");
+            break;
+          case Role.BranchManager:
+            if (location.pathname.startsWith("/admin")) {
+              navigate("/manager/home");
+            }
+            break;
+          case Role.SuperAdmin:
+            if (location.pathname.startsWith("/manager")) {
+              navigate("/admin/home");
+            }
+            break;
+          default:
+            localStorage.removeItem("accessToken");
+            navigate("/login");
+            break;
+        }
+
+        auth?.setAuthContext(UserDetail.data);
+      } catch (error) {
+        console.error("Authentication error:", error);
         localStorage.removeItem("accessToken");
-        navigate("");
+        navigate("/login");
       }
+    };
 
-      const result = await CheckToken();
+    checkAuth();
+  }, [navigate]);
 
-      if (!result) {
-        localStorage.removeItem("accessToken");
-        navigate("");
-      }
-
-      const UserDetail = result.data as IUserDetail;
-      auth?.setAuthContext(UserDetail.data);
-
-      setIsLogin(true);
-    } catch (err) {
-      console.log(err);
-      auth?.setAuthContext(initialAuth);
-      localStorage.removeItem("accessToken");
-      navigate("");
-    }
-  }, []);
-
-  if (!isLogin) return null;
-
-  return children;
+  return <>{children}</>;
 };
 
 export default ProtectedLogin;

@@ -4,12 +4,12 @@ import { AiFillEdit, AiFillMail, AiTwotoneDelete } from "react-icons/ai";
 import { BsGeoAltFill } from "react-icons/bs";
 import { FaSearch } from "react-icons/fa";
 import { DeleteBranch, GetAllBranch } from "../../api/branch.api";
-import TableInfo from "../../components/Table";
-import { IBranch } from "../../interface/branch.interface";
-import { UserDetail } from "../../interface/userdetail.interface";
 import { GetAllManagers } from "../../api/users.api";
 import { ConfirmModal } from "../../components/Modal/confirmation.modal";
 import { CreateBranchModal } from "../../components/Modal/createBranch.modal";
+import TableInfo from "../../components/Table";
+import { IBranch } from "../../interface/branch.interface";
+import { UserDetail } from "../../interface/userdetail.interface";
 
 import PROVINCE from "../../assets/json/province.json";
 
@@ -26,19 +26,6 @@ const BranchManagePage = () => {
   const [branchToBeDelete, setBranchToBeDelete] = useState<IBranch | null>(
     null
   );
-
-  const fetchManagers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await GetAllManagers();
-      if (!result || result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
-      const managers: UserDetail[] = result.data;
-      setManagers(managers);
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
-    }
-  }, []);
 
   const columns = [
     {
@@ -102,6 +89,19 @@ const BranchManagePage = () => {
       setLoading(false);
     } catch (err) {
       console.log(err);
+    }
+  }, []);
+
+  const fetchManagers = useCallback(async () => {
+    try {
+      setLoading(true);
+      const result = await GetAllManagers();
+      if (!result || result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
+      const managers: UserDetail[] = result.data;
+      setManagers(managers);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
     }
   }, []);
 
@@ -201,6 +201,7 @@ const BranchManagePage = () => {
           setBranchToBeDelete(null);
         }}
         variant="delete"
+        loading={loading}
       />
       <CreateBranchModal
         isOpen={openCreateBranchModal}

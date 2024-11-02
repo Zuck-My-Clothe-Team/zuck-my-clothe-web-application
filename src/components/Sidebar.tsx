@@ -7,49 +7,54 @@ import {
   BulbFilled,
   FileExclamationFilled,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/auth.context";
 import { IoIosLogOut } from "react-icons/io";
 
 const Sidebar = () => {
   const auth = useAuth();
   const navigate = useNavigate();
+  const { branch_id } = useParams<{ branch_id: string }>();
+
+  const isSuperAdmin = auth?.authContext.role === "SuperAdmin";
 
   const sidebarItems = [
     {
       icon: <HomeFilled style={{ fontSize: "130%" }} />,
       label: "Home Page",
-      path: "/home",
+      path: isSuperAdmin ? "/admin/home" : `/manager/home`,
     },
     {
       icon: <FundFilled style={{ fontSize: "130%" }} />,
       label: "Dashboard",
-      path: "/dashboard",
+      path: isSuperAdmin
+        ? "/admin/dashboard"
+        : `/manager/${branch_id}/dashboard`,
     },
     {
       icon: <ToolFilled style={{ fontSize: "130%" }} />,
       label: "Machine",
-      path: "/machine",
+      path: isSuperAdmin ? "/admin/machine" : `/manager/${branch_id}/machine`,
     },
     {
       icon: <MehFilled style={{ fontSize: "130%" }} />,
       label: "Staff",
-      path: "/staff",
+      path: isSuperAdmin ? "/admin/staff" : `/manager/${branch_id}/staff`,
     },
     {
       icon: <FileExclamationFilled style={{ fontSize: "130%" }} />,
       label: "Report",
-      path: "/report",
+      path: isSuperAdmin ? "/admin/report" : `/manager/${branch_id}/report`,
     },
     {
       icon: <BulbFilled style={{ fontSize: "130%" }} />,
       label: "Help",
-      path: "/help",
+      path: isSuperAdmin ? "/admin/help" : `/manager/${branch_id}/help`,
     },
     {
       icon: <SettingFilled style={{ fontSize: "130%" }} />,
       label: "Settings",
-      path: "/settings",
+      path: isSuperAdmin ? "/admin/settings" : `/manager/${branch_id}/settings`,
     },
   ];
 
