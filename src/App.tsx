@@ -5,8 +5,7 @@ import ProtectedLogin from "./components/auth/ProtectedLogin";
 import Sidebar from "./components/Sidebar";
 import { theme } from "./config/antdTheme";
 import { AuthProvider } from "./context/auth.context";
-import LoadingSpinPage from "./pages/LoadingSpinPage";
-import ShowBranchPage from "./pages/Branch/ShowBranchPage";
+import LoadingPage from "./pages/LoadingPage";
 
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
@@ -15,6 +14,7 @@ const UsersManagePage = lazy(() => import("./pages/Users/UsersManagePage"));
 const MachineManagePage = lazy(
   () => import("./pages/Machine/MachineManagePage")
 );
+const ShowBranchPage = lazy(() => import("./pages/Branch/ShowBranchPage"));
 
 const AppPage = () => {
   return (
@@ -53,7 +53,7 @@ function App() {
     <ConfigProvider theme={theme}>
       <AuthProvider>
         <BrowserRouter basename="/">
-          <Suspense fallback={<LoadingSpinPage />}>
+          <Suspense fallback={<LoadingPage />}>
             <ProtectedLogin>
               <Routes>
                 <Route element={<AppPage />} path="admin">
@@ -61,7 +61,11 @@ function App() {
                     <Route
                       key={route.path}
                       path={route.path}
-                      element={route.element}
+                      element={
+                        <Suspense fallback={<LoadingPage />}>
+                          {route.element}
+                        </Suspense>
+                      }
                     />
                   ))}
                 </Route>
@@ -72,7 +76,11 @@ function App() {
                       <Route
                         key={route.path}
                         path={route.path}
-                        element={route.element}
+                        element={
+                          <Suspense fallback={<LoadingPage />}>
+                            {route.element}
+                          </Suspense>
+                        }
                       />
                     ))}
                   </Route>

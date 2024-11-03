@@ -1,16 +1,22 @@
 import { Form, Input } from "antd";
-import { useState } from "react";
+import React from "react";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { LuUser2 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { Login } from "../api/auth.api";
-import { IUserDetail } from "../interface/userdetail.interface";
+import { useAuth } from "../context/auth.context";
+import { IUserDetail, Role } from "../interface/userdetail.interface";
 import { axiosInstance } from "../utils/axiosInstance";
-import { SwalError, SwalSuccess } from "../utils/swal";
+import { SwalError } from "../utils/swal";
 
-const LoginForm = () => {
+type LoadingForm = {
+  isLoading: boolean;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const LoginForm: React.FC<LoadingForm> = ({ isLoading, setIsLoading }) => {
   const [form] = Form.useForm();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const auth = useAuth();
   const navigate = useNavigate();
 
   const onFinish = async () => {
@@ -21,15 +27,25 @@ const LoginForm = () => {
       const userDetail: IUserDetail = response;
       localStorage.setItem("accessToken", userDetail.token);
       axiosInstance.defaults.headers.Authorization = `Bearer ${userDetail.token}`;
-      SwalSuccess("เข้าสู่ระบบสำเร็จ", "กำลังเปลี่ยนเส้นทาง");
-      navigate("/manager/home");
-      setIsLoading(false);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (err) {
       SwalError("เข้าสู่ระบบไม่สำเร็จ", "กรุณาลองใหม่ภายหลัง");
       setIsLoading(false);
       throw new Error("Failed : cannot login." + err);
     }
   };
+
+  if (localStorage.getItem("accessToken")) {
+    if (auth?.authContext.role === Role.BranchManager) {
+      navigate("/manager/home");
+    }
+    if (auth?.authContext.role === Role.SuperAdmin) {
+      navigate("/admin/home");
+    }
+  }
+
   return (
     <div className="w-full">
       <Form
