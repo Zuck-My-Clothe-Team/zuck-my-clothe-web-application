@@ -2,21 +2,41 @@ import { UserDetail } from "../interface/userdetail.interface";
 import { axiosInstance } from "../utils/axiosInstance";
 
 export async function GetAllUsers() {
-  const result = await axiosInstance.get("/users/all");
-  return result;
+  try {
+    const result = await axiosInstance.get("/users/all");
+    return result;
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    throw error;
+  }
 }
 
 export async function GetAllManagers() {
-  const result = await axiosInstance.get("/users/manager/all");
-  return result;
+  try {
+    const result = await axiosInstance.get("/users/manager/all");
+    return result;
+  } catch (error) {
+    console.error("Error fetching all managers:", error);
+    throw error;
+  }
 }
 
 export async function CreateUser(data: UserDetail) {
-  const result = await axiosInstance.post("/users", data);
-  return result;
+  try {
+    const result = await axiosInstance.post("/users", data);
+    return result;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    throw error;
+  }
 }
 
 export async function DeleteUser(id: string) {
-  const result = await axiosInstance.delete(`/users/${id}`);
-  return result;
+  try {
+    const result = await axiosInstance.delete(`/users/${id}`);
+    return result;
+  } catch (error) {
+    console.error(`Error deleting user with ID ${id}:`, error);
+    throw error;
+  }
 }

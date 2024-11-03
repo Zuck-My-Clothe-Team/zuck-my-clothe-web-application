@@ -85,8 +85,6 @@ const BranchManagePage = () => {
 
       const branchData: IBranch[] = result.data;
       setDatasource(branchData);
-
-      setLoading(false);
     } catch (err) {
       console.log(err);
     }
@@ -94,12 +92,10 @@ const BranchManagePage = () => {
 
   const fetchManagers = useCallback(async () => {
     try {
-      setLoading(true);
       const result = await GetAllManagers();
       if (!result || result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
       const managers: UserDetail[] = result.data;
       setManagers(managers);
-      setLoading(false);
     } catch (error) {
       console.error(error);
     }
@@ -124,7 +120,8 @@ const BranchManagePage = () => {
   }, [searchValue, province, searchBranch]);
 
   useMemo(() => {
-    Promise.all([fetchAllBranch(), fetchManagers()]);
+    Promise.all([fetchManagers(), fetchAllBranch()]);
+    setLoading(false);
   }, [fetchAllBranch, fetchManagers]);
 
   return (
