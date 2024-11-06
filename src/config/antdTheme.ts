@@ -32,6 +32,8 @@ export const theme: ThemeConfig = {
       rowSelectedBg: "#F1F1F1",
       headerSplitColor: "#BDE2FF",
       headerBorderRadius: 0,
+      headerSortActiveBg: "#BDE2FF",
+      headerSortHoverBg: "#2594E1",
     },
     Input: {
       borderRadius: 4,
