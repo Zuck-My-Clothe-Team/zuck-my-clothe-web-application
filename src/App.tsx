@@ -19,10 +19,10 @@ const ShowBranchPage = lazy(() => import("./pages/Branch/ShowBranchPage"));
 const AppPage = () => {
   return (
     <div className="flex flex-row gap-x-4 lg:gap-x-8 w-screen">
-      <div className="w-[70px] lg:w-[250px] xl:w-[350px]">
+      <div className="w-[70px] lg:w-[250px] xl:w-[350px] fixed h-full">
         <Sidebar />
       </div>
-      <div className="py-6 px-4 lg:px-12 w-full">
+      <div className="py-6 px-4 lg:px-12 w-full ml-[70px] lg:ml-[250px] xl:ml-[350px]">
         <Outlet />
       </div>
     </div>

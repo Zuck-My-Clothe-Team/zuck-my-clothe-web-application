@@ -1,6 +1,14 @@
+import { IBranch } from "./branch.interface";
+import { IContracts } from "./employee.interface";
+
 export interface IUserDetail {
   data: UserDetail;
   token: string;
+}
+
+export interface IUser extends UserDetail {
+  branch: IBranch[];
+  contracts: IContracts[];
 }
 
 export interface UserDetail {
@@ -19,4 +27,9 @@ export enum Role {
   BranchManager = "BranchManager",
   Employee = "Employee",
   Client = "Client",
+}
+
+export enum ContractType {
+  Worker = "Worker",
+  Deliver = "Deliver",
 }

@@ -11,6 +11,16 @@ export async function GetAllUsers() {
   }
 }
 
+export async function GetBranchEmployee(branchId: string) {
+  try {
+    const result = await axiosInstance.get(`/users/branch/${branchId}`);
+    return result;
+  } catch (error) {
+    console.error("Error fetching all managers:", error);
+    throw error;
+  }
+}
+
 export async function GetAllManagers() {
   try {
     const result = await axiosInstance.get("/users/manager/all");
