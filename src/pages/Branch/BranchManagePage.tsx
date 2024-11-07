@@ -1,6 +1,6 @@
 import { Button, Input, Select } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AiFillEdit, AiFillMail, AiTwotoneDelete } from "react-icons/ai";
+import { AiFillEdit, AiTwotoneDelete } from "react-icons/ai";
 import { BsGeoAltFill } from "react-icons/bs";
 import { FaSearch } from "react-icons/fa";
 import { DeleteBranch, GetAllBranch } from "../../api/branch.api";
@@ -11,7 +11,9 @@ import TableInfo from "../../components/Table";
 import { IBranch } from "../../interface/branch.interface";
 import { UserDetail } from "../../interface/userdetail.interface";
 
+import { Link } from "react-router-dom";
 import PROVINCE from "../../assets/json/province.json";
+import UpdateBranchModal from "../../components/Modal/updateBranch.modal";
 
 const BranchManagePage = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -23,9 +25,8 @@ const BranchManagePage = () => {
   const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
   const [openCreateBranchModal, setOpenCreateBranchModal] =
     useState<boolean>(false);
-  const [branchToBeDelete, setBranchToBeDelete] = useState<IBranch | null>(
-    null
-  );
+  const [openEditModel, setOpenEditModel] = useState<boolean>(false);
+  const [branchToBeUsed, setBranchToBeUsed] = useState<IBranch | null>(null);
 
   const columns = [
     {
@@ -48,8 +49,14 @@ const BranchManagePage = () => {
     },
     {
       title: "",
-      render: (_: IBranch, __: unknown, index: number) => (
-        <BsGeoAltFill className="size-6 text-primaryblue-100" key={index} />
+      render: (data: IBranch, __: unknown, index: number) => (
+        <Link
+          className="cursor-pointer"
+          target="_blank"
+          to={`https://www.google.com/maps/place/${data.branch_lat},${data.branch_long}/`}
+        >
+          <BsGeoAltFill className="size-6 text-primaryblue-100" key={index} />
+        </Link>
       ),
     },
     {
@@ -64,12 +71,17 @@ const BranchManagePage = () => {
     {
       render: (data: IBranch, __: unknown, index: number) => (
         <div className="flex flex-row gap-x-4 text-primaryblue-100" key={index}>
-          <AiFillMail className="size-6 cursor-pointer" />
-          <AiFillEdit className="size-6 cursor-pointer" />
+          <AiFillEdit
+            className="size-6 cursor-pointer"
+            onClick={() => {
+              setBranchToBeUsed(data);
+              setOpenEditModel(true);
+            }}
+          />
           <AiTwotoneDelete
             className="size-6 cursor-pointer"
             onClick={() => {
-              setBranchToBeDelete(data);
+              setBranchToBeUsed(data);
               setOpenDeleteModal(true);
             }}
           />
@@ -179,13 +191,13 @@ const BranchManagePage = () => {
         isOpen={openDeleteModal}
         title="โปรดตรวจสอบก่อนทำการลบ"
         message={[
-          `คุณต้องการลบข้อมูลนี้ใช่หรือไม่ ${branchToBeDelete?.branch_name}`,
+          `คุณต้องการลบข้อมูลนี้ใช่หรือไม่ ${branchToBeUsed?.branch_name}`,
           "คุณมั่นใจแล้วใช่ไหมว่าต้องการลบออกจากระบบ",
         ]}
         onOk={async () => {
           try {
-            if (!branchToBeDelete) throw new Error("ไม่พบข้อมูลสาขา");
-            const result = await DeleteBranch(branchToBeDelete.branch_id);
+            if (!branchToBeUsed) throw new Error("ไม่พบข้อมูลสาขา");
+            const result = await DeleteBranch(branchToBeUsed.branch_id);
             if (result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
             await fetchAllBranch();
             setOpenDeleteModal(false);
@@ -195,7 +207,7 @@ const BranchManagePage = () => {
         }}
         onClose={() => {
           setOpenDeleteModal(false);
-          setBranchToBeDelete(null);
+          setBranchToBeUsed(null);
         }}
         variant="delete"
         loading={loading}
@@ -203,6 +215,12 @@ const BranchManagePage = () => {
       <CreateBranchModal
         isOpen={openCreateBranchModal}
         onClose={() => setOpenCreateBranchModal(false)}
+        managers={managers}
+      />
+      <UpdateBranchModal
+        isOpen={openEditModel}
+        onClose={() => setOpenEditModel(false)}
+        data={branchToBeUsed as IBranch}
         managers={managers}
       />
     </>
