@@ -50,3 +50,13 @@ export async function DeleteBranch(branchID: string) {
     throw error;
   }
 }
+
+export async function UpdateBranch(data: IBranch) {
+  try {
+    const result = await axiosInstance.put(`/branch/update/`, data);
+    return result;
+  } catch (error) {
+    console.error(`Error updating branch by ID ${data.branch_id}:`, error);
+    throw error;
+  }
+}
