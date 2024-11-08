@@ -24,6 +24,7 @@ export const CreateMachineModal: React.FC<CreateMachineModalType> = (props) => {
     setLoading(true);
     try {
       values.weight = Number(values.weight);
+      values.machine_label = Number(values.machine_label);
       const result = await CreateMachine(values);
       if (!result || result.status !== 201) throw new Error("เกิดข้อผิดพลาด");
       form.resetFields();
@@ -92,6 +93,29 @@ export const CreateMachineModal: React.FC<CreateMachineModalType> = (props) => {
               <Input
                 className=" w-full mt-2 text-sm h-8"
                 placeholder="รหัสเครื่อง"
+                disabled={loading}
+              />
+            </Form.Item>
+
+            <Form.Item<IMachine>
+              label="เลขเครื่อง"
+              name="machine_label"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณากรอกเลขเครื่อง",
+                },
+                {
+                  pattern: /^[0-9]{1,2}$/,
+                  message: "กรุณากรอกเฉพาะตัวเลข",
+                },
+              ]}
+            >
+              <Input
+                className=" w-full mt-2 text-sm h-8"
+                placeholder="เลขเครื่อง"
+                minLength={1}
+                maxLength={2}
                 disabled={loading}
               />
             </Form.Item>
