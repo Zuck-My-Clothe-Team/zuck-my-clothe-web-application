@@ -19,7 +19,7 @@ const ShowBranchPage = lazy(() => import("./pages/Branch/ShowBranchPage"));
 const AppPage = () => {
   return (
     <div className="flex flex-row gap-x-4 lg:gap-x-8 w-screen">
-      <div className="w-[70px] lg:w-[250px] xl:w-[350px] fixed h-full">
+      <div className="w-[70px] lg:w-[250px] xl:w-[350px] fixed h-full slide-in">
         <Sidebar />
       </div>
       <div className="py-6 px-4 lg:px-12 w-full ml-[70px] lg:ml-[250px] xl:ml-[350px]">
@@ -48,6 +48,11 @@ const managerRoutes = [
   { path: ":branch_id/settings", element: <>settings</> },
 ];
 
+const employeeRoutes = [
+  { path: ":branch_id/dashboard", element: <>dashboard</> },
+  { path: ":branch_id/report", element: <>report</> },
+];
+
 function App() {
   return (
     <ConfigProvider theme={theme}>
@@ -73,6 +78,21 @@ function App() {
                   <Route path="home" element={<ShowBranchPage />} />
                   <Route element={<AppPage />}>
                     {managerRoutes.map((route) => (
+                      <Route
+                        key={route.path}
+                        path={route.path}
+                        element={
+                          <Suspense fallback={<LoadingPage />}>
+                            {route.element}
+                          </Suspense>
+                        }
+                      />
+                    ))}
+                  </Route>
+                </Route>
+                <Route path="employee">
+                  <Route element={<AppPage />}>
+                    {employeeRoutes.map((route) => (
                       <Route
                         key={route.path}
                         path={route.path}

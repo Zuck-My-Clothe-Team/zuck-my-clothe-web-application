@@ -1,5 +1,5 @@
 import { Form, Input } from "antd";
-import React from "react";
+import React, { useMemo } from "react";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { LuUser2 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,7 @@ import { useAuth } from "../context/auth.context";
 import { IUserDetail, Role } from "../interface/userdetail.interface";
 import { axiosInstance } from "../utils/axiosInstance";
 import { SwalError } from "../utils/swal";
+import { GetEmployeeContractsByUserID } from "../api/employee-contract.api";
 
 type LoadingForm = {
   isLoading: boolean;
@@ -37,14 +38,35 @@ const LoginForm: React.FC<LoadingForm> = ({ isLoading, setIsLoading }) => {
     }
   };
 
-  if (localStorage.getItem("accessToken")) {
-    if (auth?.authContext.role === Role.BranchManager) {
-      navigate("/manager/home");
+  useMemo(async () => {
+    if (localStorage.getItem("accessToken")) {
+      if (auth?.authContext.role === Role.BranchManager) {
+        navigate("/manager/home");
+      }
+      if (auth?.authContext.role === Role.SuperAdmin) {
+        navigate("/admin/home");
+      }
+      if (auth?.authContext.role === Role.Employee) {
+        const result = await GetEmployeeContractsByUserID(
+          auth?.authContext.user_id
+        );
+
+        if (!result || result.status !== 200) {
+          SwalError("เข้าสู่ระบบไม่สำเร็จ", "กรุณาลองใหม่ภายหลัง");
+          setIsLoading(false);
+          return;
+        }
+
+        if (result.data.length === 0) {
+          SwalError("ไม่พบข้อมูลสาขา", "กรุณาลองใหม่ภายหลัง");
+          setIsLoading(false);
+          return;
+        } else {
+          navigate(`/employee/${result.data[0].branch_id}/dashboard`);
+        }
+      }
     }
-    if (auth?.authContext.role === Role.SuperAdmin) {
-      navigate("/admin/home");
-    }
-  }
+  }, [auth?.authContext.role, navigate]);
 
   return (
     <div className="w-full">

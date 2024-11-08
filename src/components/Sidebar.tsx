@@ -1,15 +1,15 @@
 import {
-  HomeFilled,
-  MehFilled,
-  FundFilled,
-  ToolFilled,
-  SettingFilled,
   BulbFilled,
   FileExclamationFilled,
+  FundFilled,
+  HomeFilled,
+  MehFilled,
+  SettingFilled,
+  ToolFilled,
 } from "@ant-design/icons";
+import { IoIosLogOut } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/auth.context";
-import { IoIosLogOut } from "react-icons/io";
 
 const Sidebar = () => {
   const auth = useAuth();
@@ -17,6 +17,19 @@ const Sidebar = () => {
   const { branch_id } = useParams<{ branch_id: string }>();
 
   const isSuperAdmin = auth?.authContext.role === "SuperAdmin";
+  const isEmployee = auth?.authContext.role === "Employee";
+
+  const getPath = (basePath: string) => {
+    if (isSuperAdmin) {
+      return `/admin/${basePath}`;
+    } else if (isEmployee) {
+      return `/employee/${branch_id}/${basePath}`;
+    } else {
+      return `/manager/${branch_id}/${basePath}`;
+    }
+  };
+
+  const restrictedPagesForEmployees = ["home page", "staff", "settings"];
 
   const sidebarItems = [
     {
@@ -27,36 +40,40 @@ const Sidebar = () => {
     {
       icon: <FundFilled style={{ fontSize: "130%" }} />,
       label: "Dashboard",
-      path: isSuperAdmin
-        ? "/admin/dashboard"
-        : `/manager/${branch_id}/dashboard`,
+      path: getPath("dashboard"),
     },
     {
       icon: <ToolFilled style={{ fontSize: "130%" }} />,
       label: "Machine",
-      path: isSuperAdmin ? "/admin/machine" : `/manager/${branch_id}/machine`,
+      path: getPath("machine"),
     },
     {
       icon: <MehFilled style={{ fontSize: "130%" }} />,
       label: "Staff",
-      path: isSuperAdmin ? "/admin/staff" : `/manager/${branch_id}/staff`,
+      path: getPath("staff"),
     },
     {
       icon: <FileExclamationFilled style={{ fontSize: "130%" }} />,
       label: "Report",
-      path: isSuperAdmin ? "/admin/report" : `/manager/${branch_id}/report`,
+      path: getPath("report"),
     },
     {
       icon: <BulbFilled style={{ fontSize: "130%" }} />,
       label: "Help",
-      path: isSuperAdmin ? "/admin/help" : `/manager/${branch_id}/help`,
+      path: getPath("help"),
     },
     {
       icon: <SettingFilled style={{ fontSize: "130%" }} />,
       label: "Settings",
-      path: isSuperAdmin ? "/admin/settings" : `/manager/${branch_id}/settings`,
+      path: getPath("settings"),
     },
-  ];
+  ].filter(
+    (item) =>
+      !(
+        isEmployee &&
+        restrictedPagesForEmployees.includes(item.label.toLowerCase())
+      )
+  );
 
   return (
     <div className="w-[70px] lg:w-[255px] xl:w-[300px] h-screen sticky py-4">
@@ -100,7 +117,7 @@ const Sidebar = () => {
             <div className="rounded-full bg-gray-400 hidden lg:block">
               <img
                 src={auth?.authContext.profile_image_url || "/images/user.png"}
-                className="lg:size-10 xl:size-14 rounded-full"
+                className="lg:size-8 xl:size-12 rounded-full"
                 alt="Profile"
               />
             </div>
