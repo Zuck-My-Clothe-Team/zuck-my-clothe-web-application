@@ -1,7 +1,11 @@
 import React, { createContext, useContext, useState } from "react";
 import { UserDetail } from "../interface/userdetail.interface";
 
-export const initialAuth: UserDetail = {
+export interface IAuthContext extends UserDetail {
+  branch_id: string;
+}
+
+export const initialAuth: IAuthContext = {
   user_id: "",
   email: "",
   firstname: "",
@@ -9,11 +13,12 @@ export const initialAuth: UserDetail = {
   lastname: "",
   profile_image_url: "",
   phone: "",
+  branch_id: "",
 };
 
 interface AuthContextType {
-  authContext: UserDetail;
-  setAuthContext: (value: UserDetail) => void;
+  authContext: IAuthContext;
+  setAuthContext: (value: IAuthContext) => void;
   logout: () => Promise<void>;
 }
 
@@ -26,7 +31,7 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [authContext, setAuthContext] = useState<UserDetail>(initialAuth);
+  const [authContext, setAuthContext] = useState<IAuthContext>(initialAuth);
 
   const logout = async () => {
     try {
