@@ -31,6 +31,24 @@ export async function CreateMachine(machine: IMachine) {
   }
 }
 
+export async function UpdateMachineLabel(
+  machine_serial: string,
+  label: number
+) {
+  try {
+    const result = await axiosInstance.put(
+      `/machine/update/${machine_serial}/set_label/${label}`
+    );
+    return result;
+  } catch (error) {
+    console.error(
+      `Error updating machine label for serial ${machine_serial}:`,
+      error
+    );
+    throw error;
+  }
+}
+
 export async function UpdateMachineStatus(
   machine_serial: string,
   status: boolean

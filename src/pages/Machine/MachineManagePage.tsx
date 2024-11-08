@@ -1,11 +1,12 @@
-import { Button, Input, Select } from "antd";
+import { Button, Form, Input, Select } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AiTwotoneDelete } from "react-icons/ai";
+import { AiFillEdit, AiTwotoneDelete } from "react-icons/ai";
 import { FaSearch } from "react-icons/fa";
 import {
   DeleteMachine,
   GetAllMachine,
   GetAllMachineByBranch,
+  UpdateMachineLabel,
   UpdateMachineStatus,
 } from "../../api/machine.api";
 import { ConfirmModal } from "../../components/Modal/confirmation.modal";
@@ -17,6 +18,7 @@ import { useAuth } from "../../context/auth.context";
 import { Role } from "../../interface/userdetail.interface";
 import { useParams } from "react-router-dom";
 import { CreateMachineModal } from "../../components/Modal/createMachine.modal";
+import { RxCross2 } from "react-icons/rx";
 
 const MachineManagePage = () => {
   const auth = useAuth();
@@ -37,6 +39,21 @@ const MachineManagePage = () => {
     null
   );
   const [updateStatusValue, setUpdateStatusValue] = useState<boolean>(false);
+  const [editMachineLabel, setEditMachineLabel] = useState<string | null>(null);
+
+  const updateMachineLabel = async (machine_id: string, newLabel: number) => {
+    setLoading(true);
+    try {
+      const result = await UpdateMachineLabel(machine_id, newLabel);
+      if (result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
+      fetchAllMachines();
+    } catch (error) {
+      console.error(error);
+    }
+
+    setLoading(false);
+    setEditMachineLabel(null);
+  };
 
   const columns = [
     {
@@ -44,17 +61,76 @@ const MachineManagePage = () => {
       dataIndex: "machine_serial",
       key: "machine_serial",
     },
+    ...(auth?.authContext.role === Role.SuperAdmin
+      ? [
+          {
+            title: "สาขา",
+            dataIndex: "branch_id",
+            key: "branch_id",
+            render: (branch_id: string) => {
+              return (
+                <div>
+                  {
+                    branchData.find((branch) => branch.branch_id === branch_id)
+                      ?.branch_name
+                  }
+                </div>
+              );
+            },
+          },
+        ]
+      : []),
     {
-      title: "สาขา",
-      dataIndex: "branch_id",
-      key: "branch_id",
-      render: (branch_id: string) => {
+      title: "หมายเลขเครื่อง",
+      defaultSortOrder: "ascend" as const,
+      sorter: (a: IMachine, b: IMachine) =>
+        String(a.machine_label).localeCompare(String(b.machine_label)),
+      render: (data: IMachine) => {
+        const isEditing = editMachineLabel === data.machine_serial;
         return (
-          <div>
-            {
-              branchData.find((branch) => branch.branch_id === branch_id)
-                ?.branch_name
-            }
+          <div className="flex flex-row gap-2 items-center">
+            {isEditing ? (
+              <>
+                {data.machine_type === MachineType.WASHER
+                  ? "เครื่องซักที่"
+                  : "เครื่องอบที่"}
+                <Form.Item
+                  rules={[
+                    {
+                      pattern: /^[0-9]{1,2}$/,
+                      message: "กรุณากรอกเฉพาะตัวเลข",
+                    },
+                  ]}
+                >
+                  <Input
+                    defaultValue={String(data.machine_label).split(" ")[1]}
+                    onBlur={(e) => {
+                      updateMachineLabel(
+                        data.machine_serial,
+                        Number(e.target.value)
+                      );
+                    }}
+                    minLength={1}
+                    maxLength={2}
+                    disabled={loading}
+                  />
+                </Form.Item>
+                <RxCross2
+                  className="size-4 cursor-pointer"
+                  onClick={() => {
+                    setEditMachineLabel(null);
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                {data.machine_label ? data.machine_label : "-"}
+                <AiFillEdit
+                  className="size-4 cursor-pointer"
+                  onClick={() => setEditMachineLabel(data.machine_serial)}
+                />
+              </>
+            )}
           </div>
         );
       },
