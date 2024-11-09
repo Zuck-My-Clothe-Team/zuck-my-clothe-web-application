@@ -170,6 +170,7 @@ export const CreateBranchModal: React.FC<CreateBranchModalType> = (props) => {
               <Input
                 className=" w-full mt-2 text-sm h-8"
                 placeholder="ชื่อสาขา"
+                maxLength={64}
                 disabled={loading}
               />
             </Form.Item>
@@ -271,6 +272,7 @@ export const CreateBranchModal: React.FC<CreateBranchModalType> = (props) => {
                   <Input
                     className=" w-full mt-2 text-sm h-8"
                     placeholder="เลขที่"
+                    maxLength={8}
                     disabled={loading}
                   />
                 </Form.Item>
@@ -289,6 +291,7 @@ export const CreateBranchModal: React.FC<CreateBranchModalType> = (props) => {
                   <Input
                     className=" w-full mt-2 text-sm h-8"
                     placeholder="ซอย"
+                    maxLength={32}
                     disabled={loading}
                   />
                 </Form.Item>
@@ -309,6 +312,7 @@ export const CreateBranchModal: React.FC<CreateBranchModalType> = (props) => {
                   <Input
                     className=" w-full mt-2 text-sm h-8"
                     placeholder="ถนน"
+                    maxLength={64}
                     disabled={loading}
                   />
                 </Form.Item>
