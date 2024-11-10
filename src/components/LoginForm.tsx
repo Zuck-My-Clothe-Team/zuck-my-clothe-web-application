@@ -44,7 +44,7 @@ const LoginForm: React.FC<LoadingForm> = ({ isLoading, setIsLoading }) => {
         navigate("/manager/home");
       }
       if (auth?.authContext.role === Role.SuperAdmin) {
-        navigate("/admin/home");
+        navigate("/admin/dashboard");
       }
       if (auth?.authContext.role === Role.Employee) {
         const result = await GetEmployeeContractsByUserID(
@@ -62,7 +62,7 @@ const LoginForm: React.FC<LoadingForm> = ({ isLoading, setIsLoading }) => {
           setIsLoading(false);
           return;
         } else {
-          navigate(`/employee/${result.data[0].branch_id}/dashboard`);
+          navigate(`/employee/${result.data[0].branch_id}/order`);
         }
       }
     }

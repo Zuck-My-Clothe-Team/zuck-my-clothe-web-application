@@ -1,8 +1,9 @@
 import { Button, Input, notification, Select } from "antd";
+import { ColumnsType } from "antd/es/table";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AiFillEdit, AiTwotoneDelete } from "react-icons/ai";
 import { BsTelephoneFill } from "react-icons/bs";
-import { FaSearch } from "react-icons/fa";
+import { useParams } from "react-router-dom";
 import {
   DeleteUser,
   GetAllUsers,
@@ -11,20 +12,20 @@ import {
 import { ConfirmModal } from "../../components/Modal/confirmation.modal";
 import { CreateUserModal } from "../../components/Modal/createUser.modal";
 import TableInfo from "../../components/Table";
+import { useAuth } from "../../context/auth.context";
 import {
   ContractType,
   IUser,
   Role,
   UserDetail,
 } from "../../interface/userdetail.interface";
-import { useAuth } from "../../context/auth.context";
-import { useParams } from "react-router-dom";
-import { ColumnsType } from "antd/es/table";
+import LoadingPage from "../LoadingPage";
 
 const UsersManagePage = () => {
   const auth = useAuth();
   const { branch_id } = useParams<{ branch_id: string }>();
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingDelete, setLoadingDelete] = useState<boolean>(false);
   const [selectedRole, setSelectedRole] = useState<
     "Client" | "SuperAdmin" | "BranchManager" | ""
   >("");
@@ -176,7 +177,7 @@ const UsersManagePage = () => {
         result = await GetBranchEmployee(branch_id);
       }
 
-      if (result?.status !== 200)
+      if (result?.status !== 200 && result?.status !== 204)
         throw new Error("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
       let usersData: IUser[] = [];
       if (result.data) {
@@ -221,25 +222,30 @@ const UsersManagePage = () => {
     searchUser(searchValue);
   }, [searchValue, selectedRole, searchUser]);
 
+  if (loading) {
+    return <LoadingPage />;
+  }
+
   return (
     <>
       <h3 className="text-text-1 text-4xl py-4">ระบบจัดการพนักงาน</h3>
-      <section className="flex flex-row justify-between py-6 px-6">
-        <div className="flex flex-row items-center w-2/5">
+      <section className="flex flex-col lg:flex-row justify-between py-6 lg:px-6">
+        <div className="flex flex-col lg:flex-row items-center w-full lg:w-2/5 mb-4 lg:mb-0">
           <Input
             placeholder="ค้นหาชื่อพนักงาน, สาขา"
             size="large"
             onChange={(e) => {
               setSearchValue(e.target.value);
             }}
+            className="mb-4 lg:mb-0 lg:mr-4 w-full lg:w-auto"
           />
-          <Button type="primary" size="large">
+          {/* <Button type="primary" size="large" className="w-full lg:w-auto">
             <FaSearch className="text-white size-4" />
-          </Button>
+          </Button> */}
         </div>
-        <div className="flex flex-row justify-between w-2/5 gap-x-4">
+        <div className="flex flex-col lg:flex-row justify-between w-full lg:w-2/5 gap-x-4">
           <Select
-            className="w-1/2"
+            className="w-full lg:w-1/2 mb-4 lg:mb-0"
             placeholder="ตำแหน่ง"
             size="large"
             onChange={(value) => {
@@ -256,6 +262,7 @@ const UsersManagePage = () => {
           <Button
             type="primary"
             size="large"
+            className="w-full lg:w-auto"
             onClick={() => {
               setOpenCreateUserModal(true);
             }}
@@ -273,19 +280,21 @@ const UsersManagePage = () => {
           "คุณมั่นใจแล้วใช่ไหมว่าต้องการลบออกจากระบบ",
         ]}
         onOk={async () => {
+          setLoadingDelete(true);
           try {
             if (!userToBeDelete) throw new Error("ไม่พบข้อมูลสาขา");
             const result = await DeleteUser(userToBeDelete.user_id);
             if (result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
             await fetchAllUsers();
             setOpenDeleteModal(false);
+            setLoadingDelete(false);
           } catch (error) {
             console.error(error);
           }
         }}
         onClose={() => setOpenDeleteModal(false)}
         variant="delete"
-        loading={loading}
+        loading={loadingDelete}
       />
       <CreateUserModal
         isOpen={openCreateUserModal}

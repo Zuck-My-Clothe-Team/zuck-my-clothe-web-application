@@ -2,7 +2,6 @@ import { Button, Input, Select } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AiFillEdit, AiTwotoneDelete } from "react-icons/ai";
 import { BsGeoAltFill } from "react-icons/bs";
-import { FaSearch } from "react-icons/fa";
 import { DeleteBranch, GetAllBranch } from "../../api/branch.api";
 import { GetAllManagers } from "../../api/users.api";
 import { ConfirmModal } from "../../components/Modal/confirmation.modal";
@@ -14,9 +13,11 @@ import { UserDetail } from "../../interface/userdetail.interface";
 import { Link } from "react-router-dom";
 import PROVINCE from "../../assets/json/province.json";
 import UpdateBranchModal from "../../components/Modal/updateBranch.modal";
+import LoadingPage from "../LoadingPage";
 
 const BranchManagePage = () => {
   const [loading, setLoading] = useState<boolean>(true);
+  const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
   const [datasource, setDatasource] = useState<IBranch[]>([]);
   const [filterData, setFilterData] = useState<IBranch[]>([]);
   const [managers, setManagers] = useState<UserDetail[]>([]);
@@ -91,23 +92,27 @@ const BranchManagePage = () => {
   ];
 
   const fetchAllBranch = useCallback(async () => {
+    setLoading(true);
     try {
       const result = await GetAllBranch();
       if (result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
 
       const branchData: IBranch[] = result.data;
       setDatasource(branchData);
+      setLoading(false);
     } catch (err) {
       console.log(err);
     }
   }, []);
 
   const fetchManagers = useCallback(async () => {
+    setLoading(true);
     try {
       const result = await GetAllManagers();
       if (!result || result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
       const managers: UserDetail[] = result.data;
       setManagers(managers);
+      setLoading(false);
     } catch (error) {
       console.error(error);
     }
@@ -133,28 +138,32 @@ const BranchManagePage = () => {
 
   useMemo(() => {
     Promise.all([fetchManagers(), fetchAllBranch()]);
-    setLoading(false);
   }, [fetchAllBranch, fetchManagers]);
+
+  if (loading) {
+    return <LoadingPage />;
+  }
 
   return (
     <>
       <h3 className="text-text-1 text-4xl py-4">ระบบจัดการสาขา</h3>
-      <section className="flex flex-row justify-between py-6 px-6">
-        <div className="flex flex-row items-center w-2/5">
-          <Input
-            placeholder="ค้นหารหัส, สาขา, ผู้จัดการ "
-            size="large"
-            onChange={(e) => {
-              setSearchValue(e.target.value);
-            }}
-          />
-          <Button type="primary" size="large">
+      <section className="flex flex-col lg:flex-row justify-between py-6 lg:px-6">
+        {/* <div className="flex flex-row justify-center gap-x-4 w-full lg:w-2/5 mb-4 lg:mb-0"> */}
+        <Input
+          placeholder="ค้นหารหัส, สาขา, ผู้จัดการ "
+          size="large"
+          onChange={(e) => {
+            setSearchValue(e.target.value);
+          }}
+          className="mb-4 lg:mb-0 lg:mr-2"
+        />
+        {/* <Button type="primary" size="large">
             <FaSearch className="text-white size-4" />
           </Button>
-        </div>
-        <div className="flex flex-row justify-between w-1/3 gap-x-2">
+        </div> */}
+        <div className="flex flex-col lg:flex-row justify-between w-full lg:w-1/3 gap-x-2">
           <Select
-            className="w-full text-sm h-8"
+            className="w-full text-sm h-8 mb-4 lg:mb-0"
             placeholder="จังหวัด"
             disabled={loading}
             showSearch
@@ -195,12 +204,14 @@ const BranchManagePage = () => {
           "คุณมั่นใจแล้วใช่ไหมว่าต้องการลบออกจากระบบ",
         ]}
         onOk={async () => {
+          setConfirmLoading(true);
           try {
             if (!branchToBeUsed) throw new Error("ไม่พบข้อมูลสาขา");
             const result = await DeleteBranch(branchToBeUsed.branch_id);
             if (result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
             await fetchAllBranch();
             setOpenDeleteModal(false);
+            setConfirmLoading(false);
           } catch (error) {
             console.error(error);
           }
@@ -208,9 +219,10 @@ const BranchManagePage = () => {
         onClose={() => {
           setOpenDeleteModal(false);
           setBranchToBeUsed(null);
+          setConfirmLoading(false);
         }}
         variant="delete"
-        loading={loading}
+        loading={confirmLoading}
       />
       <CreateBranchModal
         isOpen={openCreateBranchModal}
@@ -226,4 +238,5 @@ const BranchManagePage = () => {
     </>
   );
 };
+
 export default BranchManagePage;

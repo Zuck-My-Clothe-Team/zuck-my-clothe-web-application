@@ -1,12 +1,12 @@
 import { GoogleMap, Libraries, useLoadScript } from "@react-google-maps/api";
 import { Button, Form, Input, Modal, Select, Spin } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { IBranch } from "../../interface/branch.interface";
-import { UserDetail } from "../../interface/userdetail.interface";
 import { CreateBranch } from "../../api/branch.api";
 import DISTRICT from "../../assets/json/district.json";
 import PROVINCE from "../../assets/json/province.json";
 import SUBDISTRICT from "../../assets/json/subdistrict.json";
+import { IBranch, IBranchCreate } from "../../interface/branch.interface";
+import { UserDetail } from "../../interface/userdetail.interface";
 import {
   DEFAULT_CENTER,
   DEFAULT_LAT,
@@ -108,8 +108,7 @@ export const CreateBranchModal: React.FC<CreateBranchModalType> = (props) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onFinish = async (values: any) => {
-    const data: IBranch = {
-      branch_id: "",
+    const data: IBranchCreate = {
       branch_name: values.branch_name,
       branch_lat: values.branch_lat,
       branch_long: values.branch_long,

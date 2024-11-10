@@ -1,12 +1,11 @@
 import {
-  BulbFilled,
   FileExclamationFilled,
   FundFilled,
   HomeFilled,
   MehFilled,
-  SettingFilled,
   ToolFilled,
 } from "@ant-design/icons";
+import { BsBasket3Fill } from "react-icons/bs";
 import { IoIosLogOut } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/auth.context";
@@ -29,18 +28,23 @@ const Sidebar = () => {
     }
   };
 
-  const restrictedPagesForEmployees = ["home page", "staff", "settings"];
+  const restrictedPagesForEmployees = ["branch", "staff", "dashboard"];
 
   const sidebarItems = [
-    {
-      icon: <HomeFilled style={{ fontSize: "130%" }} />,
-      label: "Home Page",
-      path: isSuperAdmin ? "/admin/home" : `/manager/home`,
-    },
     {
       icon: <FundFilled style={{ fontSize: "130%" }} />,
       label: "Dashboard",
       path: getPath("dashboard"),
+    },
+    {
+      icon: <BsBasket3Fill style={{ fontSize: "130%" }} />,
+      label: "Order",
+      path: getPath("order"),
+    },
+    {
+      icon: <FileExclamationFilled style={{ fontSize: "130%" }} />,
+      label: "Report",
+      path: getPath("report"),
     },
     {
       icon: <ToolFilled style={{ fontSize: "130%" }} />,
@@ -53,19 +57,9 @@ const Sidebar = () => {
       path: getPath("staff"),
     },
     {
-      icon: <FileExclamationFilled style={{ fontSize: "130%" }} />,
-      label: "Report",
-      path: getPath("report"),
-    },
-    {
-      icon: <BulbFilled style={{ fontSize: "130%" }} />,
-      label: "Help",
-      path: getPath("help"),
-    },
-    {
-      icon: <SettingFilled style={{ fontSize: "130%" }} />,
-      label: "Settings",
-      path: getPath("settings"),
+      icon: <HomeFilled style={{ fontSize: "130%" }} />,
+      label: "Branch",
+      path: isSuperAdmin ? "/admin/home" : `/manager/home`,
     },
   ].filter(
     (item) =>
@@ -76,7 +70,7 @@ const Sidebar = () => {
   );
 
   return (
-    <div className="w-[70px] lg:w-[255px] xl:w-[300px] h-screen sticky py-4">
+    <div className="w-[70px] lg:w-[255px] xl:w-[300px] h-screen sticky top-0 py-4">
       <div
         className="h-full bg-white rounded-[30px] text-gray-500 p-4 transition-transform duration-300 ease-in-out transform translate-x-3 lg:translate-x-2 xl:translate-x-4"
         style={{ boxShadow: "0px 4px 14.2px 3px rgba(0, 0, 0, 0.25)" }}
@@ -98,7 +92,7 @@ const Sidebar = () => {
               {sidebarItems.map((item, index) => (
                 <li
                   key={index}
-                  className={`px-2 py-2.5 rounded-full lg:rounded-md cursor-pointer whitespace-pre ${
+                  className={`px-2 py-2 mt-1.5 lg:mt-0 lg:py-2.5 rounded-full lg:rounded-md cursor-pointer whitespace-pre ${
                     location.pathname.includes(item.path)
                       ? "bg-sky-400 text-white"
                       : "hover:bg-gray-200"

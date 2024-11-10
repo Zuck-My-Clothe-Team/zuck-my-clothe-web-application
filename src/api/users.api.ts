@@ -11,6 +11,16 @@ export async function GetAllUsers() {
   }
 }
 
+export async function GetUserById(id: string) {
+  try {
+    const result = await axiosInstance.get(`/users/${id}`);
+    return result;
+  } catch (error) {
+    console.error(`Error fetching user with ID ${id}:`, error);
+    throw error;
+  }
+}
+
 export async function GetBranchEmployee(branchId: string) {
   try {
     const result = await axiosInstance.get(`/users/branch/${branchId}`);

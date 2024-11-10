@@ -10,7 +10,7 @@ type TableProps = {
 
 const TableInfo: React.FC<TableProps> = (props) => {
   return (
-    <>
+    <div style={{ overflowX: "auto" }}>
       <Table
         locale={{
           emptyText: "ไม่พบข้อมูล",
@@ -19,7 +19,7 @@ const TableInfo: React.FC<TableProps> = (props) => {
         loading={props.loading}
         dataSource={props.dataSource}
       />
-    </>
+    </div>
   );
 };
 

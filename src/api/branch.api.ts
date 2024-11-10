@@ -1,4 +1,4 @@
-import { IBranch } from "../interface/branch.interface";
+import { IBranch, IBranchCreate } from "../interface/branch.interface";
 import { axiosInstance } from "../utils/axiosInstance";
 
 export async function GetAllBranch() {
@@ -31,7 +31,7 @@ export async function GetOwnBranch() {
   }
 }
 
-export async function CreateBranch(data: IBranch) {
+export async function CreateBranch(data: IBranchCreate) {
   try {
     const result = await axiosInstance.post("/branch/create", data);
     return result;
