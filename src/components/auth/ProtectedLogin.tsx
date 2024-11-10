@@ -50,7 +50,7 @@ const ProtectedLogin: React.FC<{ children: React.ReactNode }> = ({
               location.pathname.startsWith("/admin") ||
               location.pathname.startsWith("/manager")
             ) {
-              navigate(`/employee/${branch_id}/dashboard`);
+              navigate(`/employee/${branch_id}/order`);
             }
             break;
           case Role.BranchManager:

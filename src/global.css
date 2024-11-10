@@ -52,3 +52,29 @@ html {
 .slide-in {
   animation: slideIn 0.25s ease-in-out;
 }
+
+.collapse-content {
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+.custom-checkbox {
+  position: relative;
+}
+
+.custom-checkbox::before {
+  content: "";
+  position: absolute;
+  top: 42.5%;
+  left: 50%;
+  width: 10px;
+  height: 18px;
+  border: solid white;
+  border-width: 0 4px 4px 0;
+  transform: translate(-50%, -50%) rotate(45deg);
+  opacity: 0;
+}
+
+.custom-checkbox:checked::before {
+  opacity: 1;
+}

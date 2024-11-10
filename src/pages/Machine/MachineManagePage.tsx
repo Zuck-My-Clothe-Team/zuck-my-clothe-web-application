@@ -1,7 +1,9 @@
 import { Button, Form, Input, Select } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AiFillEdit, AiTwotoneDelete } from "react-icons/ai";
-import { FaSearch } from "react-icons/fa";
+import { RxCross2 } from "react-icons/rx";
+import { useParams } from "react-router-dom";
+import { GetAllBranch } from "../../api/branch.api";
 import {
   DeleteMachine,
   GetAllMachine,
@@ -10,15 +12,12 @@ import {
   UpdateMachineStatus,
 } from "../../api/machine.api";
 import { ConfirmModal } from "../../components/Modal/confirmation.modal";
-import TableInfo from "../../components/Table";
-import { IMachine, MachineType } from "../../interface/machine.interface";
-import { GetAllBranch } from "../../api/branch.api";
-import { IBranch } from "../../interface/branch.interface";
-import { useAuth } from "../../context/auth.context";
-import { Role } from "../../interface/userdetail.interface";
-import { useParams } from "react-router-dom";
 import { CreateMachineModal } from "../../components/Modal/createMachine.modal";
-import { RxCross2 } from "react-icons/rx";
+import TableInfo from "../../components/Table";
+import { useAuth } from "../../context/auth.context";
+import { IBranch } from "../../interface/branch.interface";
+import { IMachine, MachineType } from "../../interface/machine.interface";
+import { Role } from "../../interface/userdetail.interface";
 
 const MachineManagePage = () => {
   const auth = useAuth();
@@ -265,52 +264,56 @@ const MachineManagePage = () => {
   return (
     <>
       <h3 className="text-text-1 text-4xl py-4">ระบบจัดการเครื่องซัก/อบ</h3>
-      <section className="flex flex-row justify-between gap-x-4 py-6 px-6">
-        <div className="flex flex-row items-center w-full">
-          <Input
-            placeholder="ค้นหาเลขเครื่อง"
-            size="large"
-            onChange={(e) => {
-              setSearchValue(e.target.value);
-            }}
-          />
-          <Button type="primary" size="large">
+      <section className="flex flex-col lg:flex-row justify-between my-4  py-6 lg:px-6">
+        {/* <div className="flex flex-col md:flex-row items-center w-full mb-4 md:mb-0"> */}
+        <Input
+          placeholder="ค้นหาเลขเครื่อง"
+          size="large"
+          onChange={(e) => {
+            setSearchValue(e.target.value);
+          }}
+          className="mb-4 lg:mb-0 lg:mr-4 w-full md:w-auto"
+        />
+        {/* <Button type="primary" size="large" className="w-full md:w-auto">
             <FaSearch className="text-white size-4" />
           </Button>
+        </div> */}
+        <div className="flex flex-col lg:flex-row justify-between gap-x-4">
+          <Select
+            className="w-full lg:w-1/2 mb-4 lg:mb-0"
+            placeholder="ประเภทเครื่อง"
+            size="large"
+            onChange={(value) => {
+              setMachineType(value);
+            }}
+          >
+            <Select.Option value="">ทั้งหมด</Select.Option>
+            <Select.Option value="Washer">เครื่องซักผ้า</Select.Option>
+            <Select.Option value="Dryer">เครื่องอบผ้า</Select.Option>
+          </Select>
+          <Select
+            className="w-full lg:w-1/2 mb-4 lg:mb-0"
+            placeholder="สถานะเครื่อง"
+            size="large"
+            onChange={(value: string) => {
+              setMachineStatus(value === "" ? null : Boolean(value));
+            }}
+          >
+            <Select.Option value="">ทั้งหมด</Select.Option>
+            <Select.Option value={true}>เปิดใช้งาน</Select.Option>
+            <Select.Option value={false}>ปิดใช้งาน</Select.Option>
+          </Select>
+          <Button
+            type="primary"
+            size="large"
+            className="w-full md:w-auto"
+            onClick={() => {
+              setOpenCreateMachineModal(true);
+            }}
+          >
+            + เพิ่มเครื่อง
+          </Button>
         </div>
-        <Select
-          className="w-1/2"
-          placeholder="ประเภทเครื่อง"
-          size="large"
-          onChange={(value) => {
-            setMachineType(value);
-          }}
-        >
-          <Select.Option value="">ทั้งหมด</Select.Option>
-          <Select.Option value="Washer">เครื่องซักผ้า</Select.Option>
-          <Select.Option value="Dryer">เครื่องอบผ้า</Select.Option>
-        </Select>
-        <Select
-          className="w-1/2"
-          placeholder="สถานะเครื่อง"
-          size="large"
-          onChange={(value: string) => {
-            setMachineStatus(value === "" ? null : Boolean(value));
-          }}
-        >
-          <Select.Option value="">ทั้งหมด</Select.Option>
-          <Select.Option value={true}>เปิดใช้งาน</Select.Option>
-          <Select.Option value={false}>ปิดใช้งาน</Select.Option>
-        </Select>
-        <Button
-          type="primary"
-          size="large"
-          onClick={() => {
-            setOpenCreateMachineModal(true);
-          }}
-        >
-          + เพิ่มเครื่อง
-        </Button>
       </section>
       <TableInfo columns={columns} loading={loading} dataSource={filterData} />
       <ConfirmModal

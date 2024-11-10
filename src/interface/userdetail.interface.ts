@@ -22,6 +22,14 @@ export interface UserDetail {
   password?: string;
 }
 
+export interface IUserReview {
+  firstname: string;
+  lastname: string;
+  profile_image_url: string;
+  review_comment: string;
+  star_rating: number;
+}
+
 export enum Role {
   SuperAdmin = "SuperAdmin",
   BranchManager = "BranchManager",

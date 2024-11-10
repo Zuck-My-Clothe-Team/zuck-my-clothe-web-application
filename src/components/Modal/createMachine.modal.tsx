@@ -192,11 +192,16 @@ export const CreateMachineModal: React.FC<CreateMachineModalType> = (props) => {
                 },
               ]}
             >
-              <Input
+              <Select
                 className="w-full mt-2 text-sm h-8"
                 placeholder="น้ำหนัก"
                 disabled={loading}
-              />
+                optionFilterProp="children"
+              >
+                <Select.Option value={7}>7 kg.</Select.Option>
+                <Select.Option value={14}>14 kg.</Select.Option>
+                <Select.Option value={21}>21 kg.</Select.Option>
+              </Select>
             </Form.Item>
 
             <Button htmlType="submit" type="primary" disabled={loading}>

@@ -15,15 +15,18 @@ const MachineManagePage = lazy(
   () => import("./pages/Machine/MachineManagePage")
 );
 const ShowBranchPage = lazy(() => import("./pages/Branch/ShowBranchPage"));
+const ReportPage = lazy(() => import("./pages/Report/ReportPage"));
 
 const AppPage = () => {
   return (
-    <div className="flex flex-row gap-x-4 lg:gap-x-8 w-screen">
-      <div className="w-[70px] lg:w-[250px] xl:w-[350px] fixed h-full slide-in">
-        <Sidebar />
-      </div>
-      <div className="py-6 px-4 lg:px-12 w-full ml-[70px] lg:ml-[250px] xl:ml-[350px]">
-        <Outlet />
+    <div className="flex justify-center w-screen ">
+      <div className="flex flex-row w-full max-w-[1920px]">
+        <div className="flex h-screen w-[70px] md:w-[100px] lg:w-[255px] xl:w-[300px] fixed slide-in">
+          <Sidebar />
+        </div>
+        <div className="max-w-[1600px] ml-[75px] md:ml-[100px] lg:ml-[272.5px] xl:ml-[315px] container py-4 px-4 lg:px-6 xl:px-8 overflow-auto">
+          <Outlet />
+        </div>
       </div>
     </div>
   );
@@ -34,23 +37,22 @@ const adminRoutes = [
   { path: "dashboard", element: <>dashboard</> },
   { path: "machine", element: <MachineManagePage /> },
   { path: "staff", element: <UsersManagePage /> },
-  { path: "report", element: <>report</> },
-  { path: "help", element: <>help</> },
-  { path: "settings", element: <>settings</> },
+  { path: "report", element: <ReportPage /> },
+  { path: "order", element: <>order</> },
 ];
 
 const managerRoutes = [
   { path: ":branch_id/dashboard", element: <>dashboard</> },
   { path: ":branch_id/machine", element: <MachineManagePage /> },
   { path: ":branch_id/staff", element: <UsersManagePage /> },
-  { path: ":branch_id/report", element: <>report</> },
-  { path: ":branch_id/help", element: <>help</> },
-  { path: ":branch_id/settings", element: <>settings</> },
+  { path: ":branch_id/report", element: <ReportPage /> },
+  { path: ":branch_id/order", element: <>order</> },
 ];
 
 const employeeRoutes = [
-  { path: ":branch_id/dashboard", element: <>dashboard</> },
-  { path: ":branch_id/report", element: <>report</> },
+  { path: ":branch_id/order", element: <>order</> },
+  { path: ":branch_id/machine", element: <MachineManagePage /> },
+  { path: ":branch_id/report", element: <ReportPage /> },
 ];
 
 function App() {
