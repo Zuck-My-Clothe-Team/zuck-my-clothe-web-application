@@ -1,15 +1,17 @@
-import { Button, Form, Input, Modal, Select, Spin } from "antd";
-import { useState } from "react";
+import { Button, Form, Input, Modal, Select } from "antd";
+import { useEffect, useState } from "react";
+import { CreateUser } from "../../api/users.api";
 import { useAuth } from "../../context/auth.context";
 import { Role, UserDetail } from "../../interface/userdetail.interface";
-import { CreateUser } from "../../api/users.api";
+import { ToastNotification } from "../Toast/Toast";
 
 type CreateUserModalType = {
   isOpen: boolean;
   onClose: () => unknown;
+  fetchUser: () => Promise<void>;
 };
 
-export const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
+const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
   const [form] = Form.useForm();
   const auth = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
@@ -21,12 +23,33 @@ export const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
       if (!result || result.status !== 201) throw new Error("เกิดข้อผิดพลาด");
       form.resetFields();
       props.onClose();
-      window.location.reload();
       setLoading(false);
+      ToastNotification.success({
+        config: {
+          message: "เพิ่มข้อมูลสำเร็จ",
+          description: `ข้อมูลของ ${
+            auth?.authContext.role === Role.SuperAdmin ? "บัญชีใหม่" : "พนักงาน"
+          } ถูกเพิ่มเข้าสู่ระบบแล้ว`,
+        },
+      });
+      await props.fetchUser();
     } catch (error) {
+      ToastNotification.error({
+        config: {
+          message: "ไม่สามารถลบข้อมูลได้",
+          description: `เกิดข้อผิดพลาด: ${error}`,
+        },
+      });
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    if (!props.isOpen) {
+      form.resetFields();
+      setLoading(false);
+    }
+  }, [form, props.isOpen]);
 
   return (
     <Modal
@@ -102,7 +125,7 @@ export const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
                   .filter(
                     (item) =>
                       (auth?.authContext.role === Role.BranchManager &&
-                        item !== Role.SuperAdmin) ||
+                        item === Role.Employee) ||
                       auth?.authContext.role === Role.SuperAdmin
                   )
                   .map((role, index) => (
@@ -176,8 +199,13 @@ export const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
               />
             </Form.Item>
 
-            <Button htmlType="submit" type="primary" disabled={loading}>
-              {loading ? <Spin /> : "เพิ่มสมาชิกใหม่"}
+            <Button
+              htmlType="submit"
+              type="primary"
+              disabled={loading}
+              className="disabled:!bg-primaryblue-300/90 disabled:!border-disabled disabled:!text-white"
+            >
+              {loading ? "กำลังเพิ่มสมาชิกใหม่..." : "เพิ่มสมาชิกใหม่"}
             </Button>
           </div>
         </Form>
@@ -185,3 +213,5 @@ export const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
     </Modal>
   );
 };
+
+export default CreateUserModal;

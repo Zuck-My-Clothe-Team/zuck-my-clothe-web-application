@@ -1,5 +1,5 @@
-import { Button, Form, Input, Select } from "antd";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Breakpoint, Button, Form, Input, Select } from "antd";
+import { lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { AiFillEdit, AiTwotoneDelete } from "react-icons/ai";
 import { RxCross2 } from "react-icons/rx";
 import { useParams } from "react-router-dom";
@@ -11,18 +11,27 @@ import {
   UpdateMachineLabel,
   UpdateMachineStatus,
 } from "../../api/machine.api";
-import { ConfirmModal } from "../../components/Modal/confirmation.modal";
-import { CreateMachineModal } from "../../components/Modal/createMachine.modal";
 import TableInfo from "../../components/Table";
 import { useAuth } from "../../context/auth.context";
 import { IBranch } from "../../interface/branch.interface";
 import { IMachine, MachineType } from "../../interface/machine.interface";
 import { Role } from "../../interface/userdetail.interface";
+import { ToastNotification } from "../../components/Toast/Toast";
+import LoadingPage from "../LoadingPage";
+
+const ConfirmModal = lazy(
+  () => import("../../components/Modal/confirmation.modal")
+);
+const CreateMachineModal = lazy(
+  () => import("../../components/Modal/createMachine.modal")
+);
 
 const MachineManagePage = () => {
   const auth = useAuth();
   const { branch_id } = useParams<{ branch_id: string }>();
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingDelete, setLoadingDelete] = useState<boolean>(false);
+  const [loadingUpdate, setLoadingUpdate] = useState<boolean>(false);
   const [branchData, setBranchData] = useState<IBranch[]>([]);
   const [datasource, setDatasource] = useState<IMachine[]>([]);
   const [filterData, setFilterData] = useState<IMachine[]>([]);
@@ -41,12 +50,38 @@ const MachineManagePage = () => {
   const [editMachineLabel, setEditMachineLabel] = useState<string | null>(null);
 
   const updateMachineLabel = async (machine_id: string, newLabel: number) => {
-    setLoading(true);
+    setLoadingUpdate(true);
     try {
       const result = await UpdateMachineLabel(machine_id, newLabel);
-      if (result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
-      fetchAllMachines();
+      if (result.status !== 200) throw new Error(result.statusText);
+      setDatasource((prev) =>
+        prev.map((data) =>
+          data.machine_serial === machine_id
+            ? {
+                ...data,
+                machine_label: `${
+                  data.machine_type === MachineType.WASHER
+                    ? "เครื่องซักที่"
+                    : "เครื่องอบที่"
+                } ${newLabel}`,
+              }
+            : data
+        )
+      );
+      ToastNotification.success({
+        config: {
+          message: "อัพเดทหมายเลขเครื่องสำเร็จ",
+          description: `อัพเดทหมายเลขเครื่อง ${machine_id} สำเร็จ`,
+        },
+      });
+      setLoadingUpdate(false);
     } catch (error) {
+      ToastNotification.error({
+        config: {
+          message: "ไม่สามารถอัพเดทหมายเลขเครื่องได้",
+          description: `เกิดข้อผิดพลาด: ${error}`,
+        },
+      });
       console.error(error);
     }
 
@@ -137,7 +172,7 @@ const MachineManagePage = () => {
     {
       title: "ประเภทเครื่อง",
       dataIndex: "machine_type",
-      key: "machine_type",
+      responsive: ["xl" as Breakpoint],
       render: (machine_type: string) => {
         return (
           <div>
@@ -153,12 +188,13 @@ const MachineManagePage = () => {
     },
     {
       title: "สถานะ",
+      width: "10%",
       render: (row: IMachine) => {
         const selectClass = row.is_active ? "select-active" : "select-inactive";
         return (
           <>
             <Select
-              className={`w-1/2 ${selectClass}`}
+              className={`${selectClass}`}
               placeholder="ตำแหน่ง"
               size="large"
               onChange={(value: boolean) => {
@@ -178,6 +214,7 @@ const MachineManagePage = () => {
       },
     },
     {
+      width: "2.5%",
       render: (data: IMachine, __: unknown, index: number) => (
         <div className="flex flex-row gap-x-4 text-primaryblue-100" key={index}>
           <AiTwotoneDelete
@@ -261,6 +298,8 @@ const MachineManagePage = () => {
     searchMachine(searchValue);
   }, [searchValue, searchMachine]);
 
+  if (loading) return <LoadingPage />;
+
   return (
     <>
       <h3 className="text-text-1 text-4xl py-4">ระบบจัดการเครื่องซัก/อบ</h3>
@@ -324,18 +363,39 @@ const MachineManagePage = () => {
           "คุณมั่นใจแล้วใช่ไหมว่าต้องการปิดการทำงาน",
         ]}
         onOk={async () => {
+          setLoadingUpdate(true);
           try {
-            setLoading(true);
             const result = await UpdateMachineStatus(
               machineToBeUpdate!.machine_serial,
               updateStatusValue
             );
-            if (result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
-            await fetchAllMachines();
-            setLoading(false);
+            if (result.status !== 200) throw new Error(result.statusText);
+            setDatasource((prev) =>
+              prev.map((data) =>
+                data.machine_serial === machineToBeUpdate?.machine_serial
+                  ? { ...data, is_active: updateStatusValue }
+                  : data
+              )
+            );
+            setLoadingUpdate(false);
             setMachineToBeUpdate(null);
             setOpenUpdateStatusModal(false);
+            ToastNotification.success({
+              config: {
+                message: "เปลี่ยนสถานะเครื่องสำเร็จ",
+                description: `เปลี่ยนสถานะเครื่อง 
+                ${machineToBeUpdate?.machine_serial} จาก 
+                ${updateStatusValue ? "ปิด" : "เปิด"} เป็น 
+                ${updateStatusValue ? "เปิด" : "ปิด"} สำเร็จ`,
+              },
+            });
           } catch (error) {
+            ToastNotification.error({
+              config: {
+                message: "ไม่สามารถเปลี่ยนสถานะได้",
+                description: `เกิดข้อผิดพลาด: ${error}`,
+              },
+            });
             console.error(error);
           }
         }}
@@ -344,7 +404,7 @@ const MachineManagePage = () => {
           setOpenUpdateStatusModal(false);
         }}
         variant="confirm"
-        loading={loading}
+        loading={loadingUpdate}
       />
       <ConfirmModal
         isOpen={openDeleteModal}
@@ -354,18 +414,35 @@ const MachineManagePage = () => {
           "คุณมั่นใจแล้วใช่ไหมว่าต้องการลบออกจากระบบ",
         ]}
         onOk={async () => {
+          setLoadingDelete(true);
           try {
-            setLoading(true);
-            if (!machineToBeUpdate) throw new Error("ไม่พบข้อมูลสาขา");
+            if (!machineToBeUpdate) throw new Error("ไม่พบข้อมูลเครื่อง");
             const result = await DeleteMachine(
               machineToBeUpdate.machine_serial
             );
-            if (result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
-            await fetchAllMachines();
+            if (result.status !== 200) throw new Error(result.statusText);
+            setDatasource((prev) =>
+              prev.filter(
+                (data) =>
+                  data.machine_serial !== machineToBeUpdate.machine_serial
+              )
+            );
             setOpenDeleteModal(false);
-            setLoading(false);
+            setLoadingDelete(false);
+            ToastNotification.success({
+              config: {
+                message: "ลบเครื่องสำเร็จ",
+                description: `ลบเครื่อง ${machineToBeUpdate?.machine_serial} สำเร็จ`,
+              },
+            });
           } catch (error) {
             console.error(error);
+            ToastNotification.error({
+              config: {
+                message: "ไม่สามารถลบเครื่องได้",
+                description: `เกิดข้อผิดพลาด: ${error}`,
+              },
+            });
           }
         }}
         onClose={() => {
@@ -373,7 +450,7 @@ const MachineManagePage = () => {
           setOpenDeleteModal(false);
         }}
         variant="delete"
-        loading={loading}
+        loading={loadingDelete}
       />
       <CreateMachineModal
         isOpen={openCreateMachineModal}

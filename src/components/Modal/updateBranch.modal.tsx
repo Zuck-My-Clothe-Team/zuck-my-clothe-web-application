@@ -1,5 +1,5 @@
 import { GoogleMap, Libraries, useLoadScript } from "@react-google-maps/api";
-import { Button, Form, Input, Modal, Select, Spin } from "antd";
+import { Button, Form, Input, Modal, Select } from "antd";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { UpdateBranch } from "../../api/branch.api";
 import { IBranch } from "../../interface/branch.interface";
@@ -10,12 +10,15 @@ import {
   DEFAULT_LONG,
   DEFAULT_ZOOM,
 } from "../../utils/const";
+import { ToastNotification } from "../Toast/Toast";
 
 type UpdateBranchModalType = {
   isOpen: boolean;
   onClose: () => unknown;
   data: IBranch;
   managers: UserDetail[];
+  branches?: IBranch[];
+  setBranches?: React.Dispatch<React.SetStateAction<IBranch[]>>;
 };
 
 const libraries: Libraries = ["marker"];
@@ -29,12 +32,36 @@ const UpdateBranchModal: React.FC<UpdateBranchModalType> = (props) => {
     try {
       values.branch_id = props.data.branch_id;
       const result = await UpdateBranch(values);
-      if (!result || result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
+      if (!result || result.status !== 200) throw new Error(result.statusText);
       form.resetFields();
       props.onClose();
-      window.location.reload();
+      if (props.setBranches && props.branches) {
+        props.setBranches(
+          props.branches.map((branch: IBranch) => {
+            if (branch.branch_id === values.branch_id) {
+              return {
+                ...branch,
+                ...values,
+              };
+            }
+            return branch;
+          })
+        );
+      }
+      ToastNotification.success({
+        config: {
+          message: "แก้ไขสาขาสำเร็จ",
+          description: `แก้ไขสาขา ${values.branch_name} สำเร็จ`,
+        },
+      });
       setLoading(false);
     } catch (error) {
+      ToastNotification.error({
+        config: {
+          message: "ไม่สามารถแก้ไขสาขาได้",
+          description: `เกิดข้อผิดพลาด: ${error}`,
+        },
+      });
       console.log(error);
     }
   };
@@ -224,8 +251,13 @@ const UpdateBranchModal: React.FC<UpdateBranchModalType> = (props) => {
               </div>
             </div>
 
-            <Button htmlType="submit" type="primary" disabled={loading}>
-              {loading ? <Spin /> : "แก้ไขผู้จัดการสาขา"}
+            <Button
+              htmlType="submit"
+              type="primary"
+              disabled={loading}
+              className="disabled:!bg-primaryblue-300/90 disabled:!border-disabled disabled:!text-white"
+            >
+              {loading ? "กำลังแก้ไขข้อมูลสาขา" : "แก้ไขสาขา"}
             </Button>
           </div>
         </Form>

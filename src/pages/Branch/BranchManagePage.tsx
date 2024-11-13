@@ -1,19 +1,29 @@
 import { Button, Input, Select } from "antd";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { AiFillEdit, AiTwotoneDelete } from "react-icons/ai";
 import { BsGeoAltFill } from "react-icons/bs";
 import { DeleteBranch, GetAllBranch } from "../../api/branch.api";
 import { GetAllManagers } from "../../api/users.api";
-import { ConfirmModal } from "../../components/Modal/confirmation.modal";
-import { CreateBranchModal } from "../../components/Modal/createBranch.modal";
 import TableInfo from "../../components/Table";
 import { IBranch } from "../../interface/branch.interface";
 import { UserDetail } from "../../interface/userdetail.interface";
 
 import { Link } from "react-router-dom";
 import PROVINCE from "../../assets/json/province.json";
-import UpdateBranchModal from "../../components/Modal/updateBranch.modal";
 import LoadingPage from "../LoadingPage";
+import { ToastNotification } from "../../components/Toast/Toast";
+
+const ConfirmModal = lazy(
+  () => import("../../components/Modal/confirmation.modal")
+);
+
+const CreateBranchModal = lazy(
+  () => import("../../components/Modal/createBranch.modal")
+);
+
+const UpdateBranchModal = lazy(
+  () => import("../../components/Modal/updateBranch.modal")
+);
 
 const BranchManagePage = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -209,10 +219,26 @@ const BranchManagePage = () => {
             if (!branchToBeUsed) throw new Error("ไม่พบข้อมูลสาขา");
             const result = await DeleteBranch(branchToBeUsed.branch_id);
             if (result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
-            await fetchAllBranch();
+            setDatasource(
+              datasource.filter(
+                (data) => data.branch_id !== branchToBeUsed.branch_id
+              )
+            );
             setOpenDeleteModal(false);
             setConfirmLoading(false);
+            ToastNotification.success({
+              config: {
+                message: "ลบสาขาสำเร็จ",
+                description: `ลบสาขา ${branchToBeUsed?.branch_name} สำเร็จ`,
+              },
+            });
           } catch (error) {
+            ToastNotification.error({
+              config: {
+                message: "ไม่สามารถลบสาขาได้",
+                description: `เกิดข้อผิดพลาด: ${error}`,
+              },
+            });
             console.error(error);
           }
         }}
@@ -228,12 +254,17 @@ const BranchManagePage = () => {
         isOpen={openCreateBranchModal}
         onClose={() => setOpenCreateBranchModal(false)}
         managers={managers}
+        fetchData={async () => {
+          await fetchAllBranch();
+        }}
       />
       <UpdateBranchModal
         isOpen={openEditModel}
         onClose={() => setOpenEditModel(false)}
         data={branchToBeUsed as IBranch}
         managers={managers}
+        branches={datasource}
+        setBranches={setDatasource}
       />
     </>
   );

@@ -13,7 +13,7 @@ type CreateMachineModalType = {
   onClose: () => unknown;
 };
 
-export const CreateMachineModal: React.FC<CreateMachineModalType> = (props) => {
+const CreateMachineModal: React.FC<CreateMachineModalType> = (props) => {
   const { branch_id } = useParams<{ branch_id: string }>();
   const [form] = Form.useForm();
   const auth = useAuth();
@@ -213,3 +213,5 @@ export const CreateMachineModal: React.FC<CreateMachineModalType> = (props) => {
     </Modal>
   );
 };
+
+export default CreateMachineModal;

@@ -11,7 +11,7 @@ interface ConfirmModalProps {
   loading: boolean;
 }
 
-export const ConfirmModal: React.FC<ConfirmModalProps> = ({
+const ConfirmModal: React.FC<ConfirmModalProps> = ({
   variant = "confirm",
   ...props
 }) => {
@@ -36,8 +36,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           onClick={props.onOk}
           className={`${
             variant === "confirm"
-              ? "bg-primaryblue-300 !text-white hover:!bg-primaryblue-100 hover:!border hover:!border-primaryblue-300"
-              : "bg-customred-1 !text-white hover:!bg-red-600 hover:!border hover:!border-customred-1"
+              ? "bg-primaryblue-300 !text-white hover:!bg-primaryblue-100 hover:!border hover:!border-primaryblue-300 disabled:!bg-primaryblue-300/90 disabled:!border-disabled"
+              : "bg-customred-1 !text-white hover:!bg-red-600 hover:!border hover:!border-customred-1 disabled:!bg-customred-1/90 disabled:!border-disabled"
           }`}
           loading={props.loading}
           disabled={props.loading}
@@ -68,3 +68,5 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     </Modal>
   );
 };
+
+export default ConfirmModal;
