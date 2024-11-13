@@ -1,8 +1,14 @@
 import { Button, Form, Input, Modal, Select } from "antd";
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { CreateUser } from "../../api/users.api";
 import { useAuth } from "../../context/auth.context";
-import { Role, UserDetail } from "../../interface/userdetail.interface";
+import { IContracts } from "../../interface/employee.interface";
+import {
+  ContractType,
+  IUser,
+  Role,
+} from "../../interface/userdetail.interface";
 import { ToastNotification } from "../Toast/Toast";
 
 type CreateUserModalType = {
@@ -14,10 +20,48 @@ type CreateUserModalType = {
 const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
   const [form] = Form.useForm();
   const auth = useAuth();
+  const { branch_id } = useParams<{ branch_id: string }>();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const onFinish = async (values: UserDetail) => {
+  const onFinish = async (values: IUser) => {
     setLoading(true);
+    console.log(values);
+    if (!values.contracts || values.contracts.length === 0) {
+      ToastNotification.error({
+        config: {
+          message: "ไม่สามารถเพิ่มข้อมูลได้",
+          description: `กรุณาเลือกประเภทสัญญา`,
+        },
+      });
+      return;
+    }
+
+    if (!branch_id || !auth?.authContext.user_id) {
+      ToastNotification.error({
+        config: {
+          message: "ไม่สามารถเพิ่มข้อมูลได้",
+          description: `ข้อมูลไม่ครบถ้วน`,
+        },
+      });
+      setLoading(false);
+      return;
+    }
+
+    const contracts: IContracts[] = values.contracts.map((contract) => {
+      return {
+        contract_id: "",
+        user_id: "",
+        branch_id: branch_id,
+        position_id: contract.position_id,
+        created_by: auth.authContext.user_id,
+        created_at: new Date().toISOString(),
+        deleted_at: "",
+        deleted_by: "",
+      };
+    });
+
+    values.contracts = contracts;
+
     try {
       const result = await CreateUser(values);
       if (!result || result.status !== 201) throw new Error("เกิดข้อผิดพลาด");
@@ -33,6 +77,7 @@ const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
         },
       });
       await props.fetchUser();
+      setLoading(false);
     } catch (error) {
       ToastNotification.error({
         config: {
@@ -41,6 +86,7 @@ const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
         },
       });
       console.log(error);
+      setLoading(false);
     }
   };
 
@@ -67,7 +113,7 @@ const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
       <div className="my-4">
         <Form form={form} layout="vertical" onFinish={onFinish}>
           <div className="flex flex-col gap-y-4">
-            <Form.Item<UserDetail>
+            <Form.Item<IUser>
               label="ชื่อ"
               name="firstname"
               rules={[
@@ -83,7 +129,7 @@ const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
                 disabled={loading}
               />
             </Form.Item>
-            <Form.Item<UserDetail>
+            <Form.Item<IUser>
               label="นามสกุล"
               name="lastname"
               rules={[
@@ -99,7 +145,7 @@ const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
                 disabled={loading}
               />
             </Form.Item>
-            <Form.Item<UserDetail>
+            <Form.Item<IUser>
               label="ตำแหน่ง"
               name="role"
               rules={[
@@ -126,7 +172,8 @@ const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
                     (item) =>
                       (auth?.authContext.role === Role.BranchManager &&
                         item === Role.Employee) ||
-                      auth?.authContext.role === Role.SuperAdmin
+                      (auth?.authContext.role === Role.SuperAdmin &&
+                        item !== Role.Employee)
                   )
                   .map((role, index) => (
                     <Select.Option key={index} value={role}>
@@ -135,7 +182,84 @@ const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
                   ))}
               </Select>
             </Form.Item>
-            <Form.Item<UserDetail>
+            {auth?.authContext.role === Role.BranchManager && (
+              <Form.List name="contracts">
+                {(fields, { add, remove }) => (
+                  <>
+                    {fields.map((field) => {
+                      return (
+                        <div key={field.key}>
+                          <div className="grid grid-cols-3 items-end gap-x-4">
+                            <Form.Item
+                              label="ประเภทสัญญา"
+                              name={[field.name, "position_id"]}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "กรุณากรอกเลือกประเภทสัญญา",
+                                },
+                              ]}
+                              className="col-span-2"
+                            >
+                              <Select
+                                className="w-full mt-2 text-sm h-8"
+                                placeholder="ประเภทสัญญา"
+                                disabled={loading}
+                                showSearch
+                                optionFilterProp="children"
+                                filterOption={(input, option) =>
+                                  String(option?.children ?? "")
+                                    .toLowerCase()
+                                    .indexOf(input.toLowerCase()) >= 0
+                                }
+                              >
+                                {Object.values(ContractType).map(
+                                  (contract, index) => (
+                                    <Select.Option key={index} value={contract}>
+                                      {contract}
+                                    </Select.Option>
+                                  )
+                                )}
+                              </Select>
+                            </Form.Item>
+                            <Button
+                              type="dashed"
+                              onClick={() => remove(field.name)}
+                              className="w-full !border !border-customred-1 !text-customred-1 mb-1"
+                              disabled={loading}
+                            >
+                              ลบประเภทสัญญา
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <Button
+                      type="dashed"
+                      onClick={() => {
+                        if (fields.length < Object.keys(ContractType).length) {
+                          add("");
+                        } else {
+                          ToastNotification.error({
+                            config: {
+                              message: "ไม่สามารถเพิ่มประเภทสัญญาได้",
+                              description:
+                                "เนื่องจากเลือกประเภทสัญญาสูงสุดแล้ว",
+                              duration: 2,
+                            },
+                          });
+                        }
+                      }}
+                      className="w-full mt-2 text-sm h-8"
+                      disabled={loading}
+                    >
+                      เพิ่มประเภทสัญญา
+                    </Button>
+                  </>
+                )}
+              </Form.List>
+            )}
+            <Form.Item<IUser>
               label="เบอร์โทร"
               name="phone"
               rules={[
@@ -158,7 +282,7 @@ const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
               />
             </Form.Item>
             <hr />
-            <Form.Item<UserDetail>
+            <Form.Item<IUser>
               label="อีเมล"
               name="email"
               rules={[
@@ -178,7 +302,7 @@ const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
                 disabled={loading}
               />
             </Form.Item>
-            <Form.Item<UserDetail>
+            <Form.Item<IUser>
               label="รหัสผ่าน"
               name="password"
               rules={[

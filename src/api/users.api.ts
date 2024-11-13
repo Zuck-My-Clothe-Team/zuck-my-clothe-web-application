@@ -60,3 +60,15 @@ export async function DeleteUser(id: string) {
     throw error;
   }
 }
+
+export async function DeleteEmployee(branch_id: string, user_id: string) {
+  try {
+    const result = await axiosInstance.delete(
+      `/users/branch/${branch_id}/${user_id}`
+    );
+    return result;
+  } catch (error) {
+    console.error(`Error deleting user with ID ${user_id}:`, error);
+    throw error;
+  }
+}
