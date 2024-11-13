@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   GetAllReport,
@@ -15,10 +15,14 @@ import { Role, UserDetail } from "../../interface/userdetail.interface";
 import { DateFormatter } from "../../utils/datetime";
 import { formatPhoneNumber } from "../../utils/utils";
 import LoadingPage from "../LoadingPage";
-import { ConfirmModal } from "../../components/Modal/confirmation.modal";
 import { IBranch } from "../../interface/branch.interface";
 import { GetAllBranch } from "../../api/branch.api";
 import { Input, Select } from "antd";
+import { ToastNotification } from "../../components/Toast/Toast";
+
+const ConfirmModal = lazy(
+  () => import("../../components/Modal/confirmation.modal")
+);
 
 const ReportPage = () => {
   const auth = useAuth();
@@ -36,12 +40,13 @@ const ReportPage = () => {
     null
   );
   const [loading, setLoading] = useState<boolean>(false);
-  const [loadingModal, setLoadingModal] = useState<boolean>(false);
+  const [loadingCancel, setLoadingCancel] = useState<boolean>(false);
   const [contentLoading, setContentLoading] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserDetail[]>([]);
   const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
   const [searchValue, setSearchValue] = useState<string>("");
   const [branchName, setBranchName] = useState<string>("");
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const toggleOpen = (index: number) => {
     setOpenStates((prev) => {
@@ -52,7 +57,7 @@ const ReportPage = () => {
   };
 
   const fetchReportAllData = useCallback(async () => {
-    setLoading(true);
+    if (initialLoad) setLoading(true);
     try {
       const result = await GetAllReport();
 
@@ -65,29 +70,32 @@ const ReportPage = () => {
     } catch (error) {
       console.error("Error fetching all reports:", error);
     } finally {
-      setLoading(false);
+      if (initialLoad) setLoading(false);
     }
-  }, []);
+  }, [initialLoad]);
 
-  const fetchReportData = useCallback(async (id: string) => {
-    setLoading(true);
-    try {
-      if (!id) throw new Error("Branch id is not provided");
-      const result = await GetReportByBranchId(id);
+  const fetchReportData = useCallback(
+    async (id: string) => {
+      if (initialLoad) setLoading(true);
+      try {
+        if (!id) throw new Error("Branch id is not provided");
+        const result = await GetReportByBranchId(id);
 
-      if (result && result.status === 200) {
-        setReportData(result.data);
-        setFilteredReportData(result.data);
-      } else {
-        console.log("Unexpected result:", result);
-        throw new Error("Error fetching reports by branch id");
+        if (result && result.status === 200) {
+          setReportData(result.data);
+          setFilteredReportData(result.data);
+        } else {
+          console.log("Unexpected result:", result);
+          throw new Error("Error fetching reports by branch id");
+        }
+      } catch (error) {
+        console.error("Error fetching reports:", error);
+      } finally {
+        if (initialLoad) setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching reports:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [initialLoad]
+  );
 
   const fetchBranchData = useCallback(async () => {
     try {
@@ -129,14 +137,56 @@ const ReportPage = () => {
     [fetchUserData, userData]
   );
 
-  useMemo(async () => {
-    if (auth?.authContext?.role === Role.SuperAdmin) {
-      await fetchReportAllData();
-      await fetchBranchData();
-    } else if (auth?.authContext?.role === Role.BranchManager && branch_id) {
-      await fetchReportData(branch_id);
-    }
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (auth?.authContext?.role === Role.SuperAdmin) {
+          await fetchReportAllData();
+          await fetchBranchData();
+        } else if (
+          auth?.authContext?.role === Role.BranchManager &&
+          branch_id
+        ) {
+          await fetchReportData(branch_id);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setInitialLoad(false);
+      }
+    };
+
+    fetchData();
   }, [auth, fetchReportAllData, fetchReportData, branch_id, fetchBranchData]);
+
+  useEffect(() => {
+    if (!initialLoad) {
+      const interval = setInterval(async () => {
+        try {
+          if (auth?.authContext?.role === Role.SuperAdmin) {
+            await fetchReportAllData();
+            await fetchBranchData();
+          } else if (
+            auth?.authContext?.role === Role.BranchManager &&
+            branch_id
+          ) {
+            await fetchReportData(branch_id);
+          }
+        } catch (error) {
+          console.error("Error during periodic data fetch:", error);
+        }
+      }, 30000);
+
+      return () => clearInterval(interval);
+    }
+  }, [
+    auth,
+    fetchReportAllData,
+    fetchReportData,
+    branch_id,
+    fetchBranchData,
+    initialLoad,
+  ]);
 
   const updateStatus = useCallback(
     async (reportId: string, status: ReportStatus) => {
@@ -145,22 +195,36 @@ const ReportPage = () => {
           report_id: reportId,
           report_status: status,
         });
+        if (!result || result.status !== 200)
+          throw new Error(result.statusText);
 
-        if (result && result.status === 200) {
-          if (auth?.authContext?.role === Role.SuperAdmin) {
-            await fetchReportAllData();
-          } else if (
-            auth?.authContext?.role === Role.BranchManager &&
-            branch_id
-          ) {
-            await fetchReportData(branch_id);
-          }
-        }
+        setReportData((prev) =>
+          prev.map((report) =>
+            report.report_id === reportId
+              ? { ...report, report_status: status }
+              : report
+          )
+        );
+        ToastNotification.success({
+          config: {
+            message: "อัปเดตสถานะสำเร็จ",
+            description: `สถานะของ ISSUE #${reportId.substring(
+              0,
+              8
+            )} ถูกเปลี่ยนเป็น ${status}`,
+          },
+        });
       } catch (error) {
+        ToastNotification.error({
+          config: {
+            message: "ไม่สามารถอัปเดตสถานะได้",
+            description: `เกิดข้อผิดพลาด: ${error}`,
+          },
+        });
         console.error("Error updating status:", error);
       }
     },
-    [fetchReportAllData, fetchReportData, auth, branch_id]
+    []
   );
 
   useEffect(() => {
@@ -434,7 +498,7 @@ const ReportPage = () => {
                           ReportStatus.Canceled ||
                         selectedReportData.report_status ===
                           ReportStatus.Fixed ||
-                        loadingModal
+                        loadingCancel
                       }
                       onClick={() => {
                         setOpenDeleteModal(true);
@@ -453,12 +517,12 @@ const ReportPage = () => {
         isOpen={openDeleteModal}
         onClose={() => setOpenDeleteModal(false)}
         onOk={async () => {
-          setLoadingModal(true);
+          setLoadingCancel(true);
           await updateStatus(
             selectedReportData!.report_id,
             ReportStatus.Canceled
           );
-          setLoadingModal(false);
+          setLoadingCancel(false);
           setOpenDeleteModal(false);
         }}
         title={`ยืนยันการยกเลิก ISSUE #${selectedReportData?.report_id.substring(
@@ -466,7 +530,7 @@ const ReportPage = () => {
           8
         )} `}
         message={["คุณต้องการยกเลิก ISSUE นี้ใช่หรือไม่"]}
-        loading={loadingModal}
+        loading={loadingCancel}
         variant="delete"
       />
     </>

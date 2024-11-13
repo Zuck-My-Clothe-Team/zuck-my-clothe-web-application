@@ -1,5 +1,5 @@
 import { GoogleMap, Libraries, useLoadScript } from "@react-google-maps/api";
-import { Button, Form, Input, Modal, Select, Spin } from "antd";
+import { Button, Form, Input, Modal, Select } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CreateBranch } from "../../api/branch.api";
 import DISTRICT from "../../assets/json/district.json";
@@ -13,16 +13,18 @@ import {
   DEFAULT_LONG,
   DEFAULT_ZOOM,
 } from "../../utils/const";
+import { ToastNotification } from "../Toast/Toast";
 
 type CreateBranchModalType = {
   isOpen: boolean;
   onClose: () => unknown;
   managers: UserDetail[];
+  fetchData: () => Promise<void>;
 };
 
 const libraries: Libraries = ["marker"];
 
-export const CreateBranchModal: React.FC<CreateBranchModalType> = (props) => {
+const CreateBranchModal: React.FC<CreateBranchModalType> = (props) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState<boolean>(false);
   const [postcode, setPostcode] = useState<string>("");
@@ -59,31 +61,41 @@ export const CreateBranchModal: React.FC<CreateBranchModalType> = (props) => {
   }, [form]);
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        form.setFieldsValue({
-          branch_lat: position.coords.latitude ?? 0,
-          branch_long: position.coords.longitude ?? 0,
-        });
-      },
-      (error) => {
-        if (error.code === error.PERMISSION_DENIED) {
-          console.error(
-            "Geolocation permission denied. Please enable it in your browser settings."
-          );
+    if (props.isOpen) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
           form.setFieldsValue({
-            branch_lat: DEFAULT_LAT,
-            branch_long: DEFAULT_LONG,
+            branch_lat: position.coords.latitude ?? 0,
+            branch_long: position.coords.longitude ?? 0,
           });
-        } else {
-          console.error(
-            "An error occurred while retrieving geolocation: ",
-            error.message
-          );
+        },
+        (error) => {
+          if (error.code === error.PERMISSION_DENIED) {
+            console.error(
+              "Geolocation permission denied. Please enable it in your browser settings."
+            );
+            ToastNotification.error({
+              config: {
+                message: "ไม่สามารถเข้าถึงตำแหน่งปัจจุบันได้",
+                description: "กรุณาเปิดการเข้าถึงตำแหน่งปัจจุบันของคุณ",
+                duration: 5,
+                showProgress: true,
+              },
+            });
+            form.setFieldsValue({
+              branch_lat: DEFAULT_LAT,
+              branch_long: DEFAULT_LONG,
+            });
+          } else {
+            console.error(
+              "An error occurred while retrieving geolocation: ",
+              error.message
+            );
+          }
         }
-      }
-    );
-  }, [form]);
+      );
+    }
+  }, [props.isOpen, form]);
 
   useEffect(() => {
     if (isLoaded && mapRef.current && markerPosition) {
@@ -134,9 +146,21 @@ export const CreateBranchModal: React.FC<CreateBranchModalType> = (props) => {
       if (!result || result.status !== 201) throw new Error("เกิดข้อผิดพลาด");
       form.resetFields();
       props.onClose();
-      window.location.reload();
+      await props.fetchData();
+      ToastNotification.success({
+        config: {
+          message: "สร้างสาขาสำเร็จ",
+          description: `สาขา ${values.branch_name} ถูกเพิ่มเข้าสู่ระบบแล้ว`,
+        },
+      });
       setLoading(false);
     } catch (error) {
+      ToastNotification.error({
+        config: {
+          message: "ไม่สามารถสร้างสาขาได้",
+          description: `เกิดข้อผิดพลาด: ${error}`,
+        },
+      });
       console.log(error);
     }
   };
@@ -471,8 +495,13 @@ export const CreateBranchModal: React.FC<CreateBranchModalType> = (props) => {
                 </Select>
               </Form.Item>
             </div>
-            <Button htmlType="submit" type="primary" disabled={loading}>
-              {loading ? <Spin /> : "สร้างสาขา"}
+            <Button
+              htmlType="submit"
+              type="primary"
+              disabled={loading}
+              className="disabled:!bg-primaryblue-300/90 disabled:!border-disabled disabled:!text-white"
+            >
+              {loading ? "กำลังเพิ่มสาขาใหม่" : "สร้างสาขา"}
             </Button>
           </div>
         </Form>
@@ -480,3 +509,5 @@ export const CreateBranchModal: React.FC<CreateBranchModalType> = (props) => {
     </Modal>
   );
 };
+
+export default CreateBranchModal;

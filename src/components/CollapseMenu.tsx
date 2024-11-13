@@ -26,12 +26,20 @@ const CollapseMenu: React.FC<CollapseMenuProps> = ({
   const [height, setHeight] = useState<string | number>(0);
 
   useEffect(() => {
-    if (props.isOpen) {
-      setHeight(contentRef.current?.scrollHeight || "auto");
-    } else {
+    if (props.items.length === 0) {
       setHeight(0);
+    } else if (props.isOpen) {
+      setHeight("auto");
+      requestAnimationFrame(() => {
+        setHeight(contentRef.current?.scrollHeight || "auto");
+      });
+    } else {
+      setHeight(contentRef.current?.scrollHeight || 0);
+      requestAnimationFrame(() => {
+        setHeight(0);
+      });
     }
-  }, [props.isOpen, props.items]);
+  }, [props, props.isOpen, props.items.length]);
 
   return (
     <div className="flex flex-col w-full">

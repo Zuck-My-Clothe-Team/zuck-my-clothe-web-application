@@ -1,6 +1,5 @@
-import { Button, Input, notification, Select } from "antd";
-import { ColumnsType } from "antd/es/table";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Input, Select } from "antd";
+import { lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { AiFillEdit, AiTwotoneDelete } from "react-icons/ai";
 import { BsTelephoneFill } from "react-icons/bs";
 import { useParams } from "react-router-dom";
@@ -9,8 +8,6 @@ import {
   GetAllUsers,
   GetBranchEmployee,
 } from "../../api/users.api";
-import { ConfirmModal } from "../../components/Modal/confirmation.modal";
-import { CreateUserModal } from "../../components/Modal/createUser.modal";
 import TableInfo from "../../components/Table";
 import { useAuth } from "../../context/auth.context";
 import {
@@ -20,6 +17,15 @@ import {
   UserDetail,
 } from "../../interface/userdetail.interface";
 import LoadingPage from "../LoadingPage";
+import { ToastNotification } from "../../components/Toast/Toast";
+import { ColumnsType } from "antd/es/table";
+
+const CreateUserModal = lazy(
+  () => import("../../components/Modal/createUser.modal")
+);
+const ConfirmModal = lazy(
+  () => import("../../components/Modal/confirmation.modal")
+);
 
 const UsersManagePage = () => {
   const auth = useAuth();
@@ -146,10 +152,11 @@ const UsersManagePage = () => {
           <BsTelephoneFill
             className="size-6 cursor-pointer"
             onClick={() => {
-              notification.success({
-                message: "คัดลอกเบอร์โทรศัพท์สำเร็จ",
-                description: `ทำการคัดลอกเบอร์โทรศัพท์ของ ${data.firstname} ${data.lastname}`,
-                placement: "bottomRight",
+              ToastNotification.info({
+                config: {
+                  message: "คัดลอกเบอร์โทรศัพท์สำเร็จ",
+                  description: `ทำการคัดลอกเบอร์โทรศัพท์ของ ${data.firstname} ${data.lastname}`,
+                },
               });
               navigator.clipboard.writeText(data.phone);
             }}
@@ -281,14 +288,29 @@ const UsersManagePage = () => {
         ]}
         onOk={async () => {
           setLoadingDelete(true);
+          setLoadingDelete(true);
           try {
             if (!userToBeDelete) throw new Error("ไม่พบข้อมูลสาขา");
             const result = await DeleteUser(userToBeDelete.user_id);
             if (result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
-            await fetchAllUsers();
             setOpenDeleteModal(false);
             setLoadingDelete(false);
+            setDatasource((prev) =>
+              prev.filter((data) => data.user_id !== userToBeDelete.user_id)
+            );
+            ToastNotification.success({
+              config: {
+                message: "ลบข้อมูลสำเร็จ",
+                description: `ลบข้อมูล ${userToBeDelete.firstname} ${userToBeDelete.lastname} ออกจากระบบ`,
+              },
+            });
           } catch (error) {
+            ToastNotification.error({
+              config: {
+                message: "ไม่สามารถลบข้อมูลได้",
+                description: `เกิดข้อผิดพลาด: ${error}`,
+              },
+            });
             console.error(error);
           }
         }}
@@ -301,6 +323,7 @@ const UsersManagePage = () => {
         onClose={() => {
           setOpenCreateUserModal(false);
         }}
+        fetchUser={async() => await fetchAllUsers()}
       />
     </>
   );
