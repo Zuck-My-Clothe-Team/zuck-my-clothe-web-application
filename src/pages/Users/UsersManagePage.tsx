@@ -4,6 +4,7 @@ import { AiFillEdit, AiTwotoneDelete } from "react-icons/ai";
 import { BsTelephoneFill } from "react-icons/bs";
 import { useParams } from "react-router-dom";
 import {
+  DeleteEmployee,
   DeleteUser,
   GetAllUsers,
   GetBranchEmployee,
@@ -291,8 +292,14 @@ const UsersManagePage = () => {
           setLoadingDelete(true);
           try {
             if (!userToBeDelete) throw new Error("ไม่พบข้อมูลสาขา");
-            const result = await DeleteUser(userToBeDelete.user_id);
-            if (result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
+            let result;
+            if (auth?.authContext.role === Role.BranchManager && branch_id) {
+              result = await DeleteEmployee(branch_id, userToBeDelete.user_id);
+            } else if (auth?.authContext.role === Role.SuperAdmin) {
+              result = await DeleteUser(userToBeDelete.user_id);
+            }
+            if (!result || result.status !== 200)
+              throw new Error("เกิดข้อผิดพลาด");
             setOpenDeleteModal(false);
             setLoadingDelete(false);
             setDatasource((prev) =>
@@ -323,7 +330,7 @@ const UsersManagePage = () => {
         onClose={() => {
           setOpenCreateUserModal(false);
         }}
-        fetchUser={async() => await fetchAllUsers()}
+        fetchUser={async () => await fetchAllUsers()}
       />
     </>
   );

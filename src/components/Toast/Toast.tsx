@@ -41,6 +41,7 @@ export const ToastNotification = {
       description: config.description,
       placement: placement,
       className: "bg-[#FFC2BB]",
+      duration: 0,
       ...config,
     });
   },
