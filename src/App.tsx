@@ -39,6 +39,7 @@ const adminRoutes = [
   { path: "staff", element: <UsersManagePage /> },
   { path: "report", element: <ReportPage /> },
   { path: "order", element: <>order</> },
+  { path: "delivery", element: <>delivery</> },
 ];
 
 const managerRoutes = [
@@ -47,12 +48,14 @@ const managerRoutes = [
   { path: ":branch_id/staff", element: <UsersManagePage /> },
   { path: ":branch_id/report", element: <ReportPage /> },
   { path: ":branch_id/order", element: <>order</> },
+  { path: ":branch_id/delivery", element: <>delivery</> },
 ];
 
 const employeeRoutes = [
   { path: ":branch_id/order", element: <>order</> },
   { path: ":branch_id/machine", element: <MachineManagePage /> },
-  { path: ":branch_id/report", element: <ReportPage /> },
+  { path: ":branch_id/order", element: <>order</> },
+  { path: ":branch_id/delivery", element: <>delivery</> },
 ];
 
 function App() {
