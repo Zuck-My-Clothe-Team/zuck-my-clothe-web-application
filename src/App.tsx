@@ -16,6 +16,7 @@ const MachineManagePage = lazy(
 );
 const ShowBranchPage = lazy(() => import("./pages/Branch/ShowBranchPage"));
 const ReportPage = lazy(() => import("./pages/Report/ReportPage"));
+const DashboardPage = lazy(() => import("./pages/Dashboard/Dashboard"));
 
 const AppPage = () => {
   return (
@@ -34,7 +35,7 @@ const AppPage = () => {
 
 const adminRoutes = [
   { path: "home", element: <BranchManagePage /> },
-  { path: "dashboard", element: <>dashboard</> },
+  { path: "dashboard", element: <DashboardPage /> },
   { path: "machine", element: <MachineManagePage /> },
   { path: "staff", element: <UsersManagePage /> },
   { path: "report", element: <ReportPage /> },
@@ -43,7 +44,7 @@ const adminRoutes = [
 ];
 
 const managerRoutes = [
-  { path: ":branch_id/dashboard", element: <>dashboard</> },
+  { path: ":branch_id/dashboard", element: <DashboardPage /> },
   { path: ":branch_id/machine", element: <MachineManagePage /> },
   { path: ":branch_id/staff", element: <UsersManagePage /> },
   { path: ":branch_id/report", element: <ReportPage /> },
