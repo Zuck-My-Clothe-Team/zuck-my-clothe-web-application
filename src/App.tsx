@@ -53,6 +53,7 @@ const managerRoutes = [
 
 const employeeRoutes = [
   { path: ":branch_id/order", element: <OrderPage /> },
+  { path: ":branch_id/report", element: <ReportPage /> },
   { path: ":branch_id/machine", element: <MachineManagePage /> },
 ];
 
