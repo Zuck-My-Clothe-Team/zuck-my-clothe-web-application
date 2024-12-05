@@ -327,11 +327,11 @@ const ReportPage = () => {
             onChange={(e) => {
               setSearchValue(e.target.value);
             }}
-            className="w-1/4 mt-2 text-sm h-8"
+            className="w-full lg:w-1/4 mt-2 text-sm h-8"
           />
           {auth?.authContext?.role === Role.SuperAdmin && (
             <Select
-              className="w-1/4 mt-2 text-sm h-8"
+              className="w-full lg:w-1/4 mt-2 text-sm h-8"
               placeholder="สาขา"
               disabled={loading}
               showSearch
@@ -353,21 +353,22 @@ const ReportPage = () => {
             </Select>
           )}
         </div>
-        <div className="flex flex-row overflow-x-auto gap-x-4 mt-4">
+        <div className="flex flex-row overflow-x-auto gap-x-2 sm:gap-x-4 mt-6 sm:mt-4">
           {Object.keys(FReportStatus).map((key) => (
             <div
-              className={`py-1 px-3 ${
+              key={key}
+              className={` ${
                 selectedFilter === key
                   ? "bg-background-2"
                   : "bg-primaryblue-100"
-              } text-white rounded-[25px] cursor-pointer hover:bg-secondaryblue-200`}
+              } py-1 px-1.5 sm:px-2 text-[12px] lg:text-[14px] text-white rounded-[25px] cursor-pointer hover:bg-secondaryblue-200`}
               onClick={() => {
                 setSelectedFilter(key as FReportStatus);
                 setSelectedReportData(null);
               }}
             >
-              <p>
-                {FReportStatusTH[key as keyof typeof FReportStatus] + " "}(
+              <p className="whitespace-nowrap">
+                {FReportStatusTH[key as keyof typeof FReportStatusTH]} (
                 {items[key as keyof typeof FReportStatus].length})
               </p>
             </div>
