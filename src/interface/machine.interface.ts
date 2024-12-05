@@ -5,6 +5,7 @@ export interface IMachine {
   machine_type: MachineType;
   is_active: boolean;
   weight: number;
+  finished_at: string | null;
 }
 
 export enum MachineType {

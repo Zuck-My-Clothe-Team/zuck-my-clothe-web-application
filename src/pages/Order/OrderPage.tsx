@@ -29,6 +29,8 @@ import { Role, UserDetail } from "../../interface/userdetail.interface";
 import { DateFormatter } from "../../utils/datetime";
 import { GetStatusOrderFromOrderDetails } from "../../utils/utils";
 import LoadingPage from "../LoadingPage";
+import { GetEmployeeContractsByUserID } from "../../api/employee-contract.api";
+import { IContracts } from "../../interface/employee.interface";
 
 enum FWorkingStatus {
   All = "All",
@@ -72,6 +74,7 @@ const OrderPage = () => {
   const [selectedFilter, setSelectedFilter] = useState<FWorkingStatus>(
     FWorkingStatus.All
   );
+  const [contracts, setContracts] = useState<IContracts[]>([]);
 
   const fetchBranchData = useCallback(async () => {
     try {
@@ -95,7 +98,8 @@ const OrderPage = () => {
         if (auth?.authContext?.role === Role.SuperAdmin) {
           res = await GetAllOrder();
         } else if (
-          auth?.authContext?.role === Role.BranchManager &&
+          (auth?.authContext?.role === Role.BranchManager ||
+            auth?.authContext.role === Role.Employee) &&
           branch_id
         ) {
           res = await GetOrderByBranch(branch_id, "paid");
@@ -154,6 +158,22 @@ const OrderPage = () => {
     },
     [fetchUserData, userData]
   );
+
+  const findContracts = useCallback(async (userID: string) => {
+    setContentLoading(true);
+    try {
+      const result = await GetEmployeeContractsByUserID(userID);
+      if (!result || result.status !== 200) {
+        throw new Error("Error fetching contracts data");
+      }
+      const data: IContracts[] = result.data;
+      setContracts(data);
+    } catch (error) {
+      console.error("Error fetching contracts data:", error);
+    } finally {
+      setContentLoading(false);
+    }
+  }, []);
 
   const handleUpdateOrder = useCallback(
     async (updateOrder: IOrderUpdateDTO) => {
@@ -245,6 +265,9 @@ const OrderPage = () => {
       if (auth?.authContext?.role === Role.SuperAdmin) {
         await fetchBranchData();
       }
+      if (auth?.authContext.user_id) {
+        await findContracts(auth?.authContext.user_id);
+      }
       await fetchOrderData(branch_id!);
       setLoading(false);
     } catch (error) {
@@ -258,7 +281,12 @@ const OrderPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [auth?.authContext?.role, fetchBranchData, branch_id]);
+  }, [
+    auth?.authContext?.role,
+    auth?.authContext.user_id,
+    fetchBranchData,
+    branch_id,
+  ]);
 
   const items = useMemo(() => {
     const allItems: CollapseMenuItems[] = [];
@@ -356,6 +384,8 @@ const OrderPage = () => {
     }
   }, [selectedDeliveryData]);
 
+  const isRider = contracts.find((item) => item.position_id === "Deliver");
+
   if (loading) return <LoadingPage />;
 
   return (
@@ -402,9 +432,7 @@ const OrderPage = () => {
             <div
               key={key}
               className={` ${
-                selectedFilter === key
-                  ? "bg-background-2"
-                  : "bg-primaryblue-100"
+                selectedFilter === key ? "bg-primaryblue-300" : "bg-[#D8D8D8]"
               } py-1 px-1.5 sm:px-2 text-[12px] lg:text-[14px] text-white rounded-[25px] cursor-pointer hover:bg-secondaryblue-200`}
               onClick={() => {
                 setSelectedFilter(key as FWorkingStatus);
@@ -559,6 +587,7 @@ const OrderPage = () => {
                           <StatusCheckBox
                             id={selectedDeliveryData.order_header_id}
                             label="รับออเดอร์"
+                            disabled={!isRider}
                             onChange={async () => {
                               const basketId =
                                 selectedDeliveryData.order_details.find(
@@ -601,6 +630,7 @@ const OrderPage = () => {
                           <StatusCheckBox
                             id={selectedDeliveryData.order_header_id}
                             label="รับผ้าสำเร็จ"
+                            disabled={!isRider}
                             onChange={async () => {
                               const basketId =
                                 selectedDeliveryData.order_details.find(
@@ -677,7 +707,7 @@ const OrderPage = () => {
                               .every(
                                 (item) =>
                                   item.order_status === EOrderStatus.Completed
-                              )
+                              ) || !isRider
                           }
                           onChange={async () => {
                             const basketId =
@@ -712,6 +742,7 @@ const OrderPage = () => {
                           <StatusCheckBox
                             id={selectedDeliveryData.order_header_id}
                             label="จัดส่งสำเร็จ"
+                            disabled={!isRider}
                             onChange={async () => {
                               const basketId =
                                 selectedDeliveryData.order_details.find(

@@ -358,9 +358,7 @@ const ReportPage = () => {
             <div
               key={key}
               className={` ${
-                selectedFilter === key
-                  ? "bg-background-2"
-                  : "bg-primaryblue-100"
+                selectedFilter === key ? "bg-primaryblue-300" : "bg-[#D8D8D8]"
               } py-1 px-1.5 sm:px-2 text-[12px] lg:text-[14px] text-white rounded-[25px] cursor-pointer hover:bg-secondaryblue-200`}
               onClick={() => {
                 setSelectedFilter(key as FReportStatus);
