@@ -1,6 +1,7 @@
 import { Button, Input, Select } from "antd";
+import { ColumnsType } from "antd/es/table";
 import { lazy, useCallback, useEffect, useMemo, useState } from "react";
-import { AiFillEdit, AiTwotoneDelete } from "react-icons/ai";
+import { AiTwotoneDelete } from "react-icons/ai";
 import { BsTelephoneFill } from "react-icons/bs";
 import { useParams } from "react-router-dom";
 import {
@@ -10,6 +11,7 @@ import {
   GetBranchEmployee,
 } from "../../api/users.api";
 import TableInfo from "../../components/Table";
+import { ToastNotification } from "../../components/Toast/Toast";
 import { useAuth } from "../../context/auth.context";
 import {
   ContractType,
@@ -18,8 +20,6 @@ import {
   UserDetail,
 } from "../../interface/userdetail.interface";
 import LoadingPage from "../LoadingPage";
-import { ToastNotification } from "../../components/Toast/Toast";
-import { ColumnsType } from "antd/es/table";
 
 const CreateUserModal = lazy(
   () => import("../../components/Modal/createUser.modal")
@@ -162,7 +162,6 @@ const UsersManagePage = () => {
               navigator.clipboard.writeText(data.phone);
             }}
           />
-          <AiFillEdit className="size-6 cursor-pointer" />
           <AiTwotoneDelete
             className="size-6 cursor-pointer"
             onClick={() => {

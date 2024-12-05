@@ -13,6 +13,7 @@ import {
 import { Role } from "../../interface/userdetail.interface";
 import LoadingPage from "../LoadingPage";
 import DonutChart from "./DonutChart";
+import { ToastNotification } from "../../components/Toast/Toast";
 import LineChart from "./LineChart";
 
 interface IDashboardStat {
@@ -50,7 +51,6 @@ export default function ManagerDashboard() {
   const fetchData = useCallback(async () => {
     try {
       // if (!branch_id) throw new Error("branch id undefined");
-
       let res;
       if (auth?.authContext?.role === Role.SuperAdmin) {
         res = await GetAllOrder();
@@ -60,7 +60,7 @@ export default function ManagerDashboard() {
 
       if (!res) return;
 
-      if (res.status != 200) throw new Error("something was wrong");
+      if (res.status != 200) throw new Error("Cannot Get Order Data");
 
       setOrderData(res.data);
       setFilteredData(res.data);
@@ -68,6 +68,13 @@ export default function ManagerDashboard() {
       setLoading(false);
     } catch (error) {
       console.error(error);
+      ToastNotification.error({
+        config: {
+          message: "เกิดข้อผิดพลาด",
+          description: "ไม่สามารถดึงข้อมูลได้ได้ " + error,
+          duration: 5,
+        },
+      });
       throw error;
     }
   }, [auth, branch_id]);
