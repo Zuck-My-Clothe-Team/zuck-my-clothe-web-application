@@ -26,20 +26,18 @@ const CollapseMenu: React.FC<CollapseMenuProps> = ({
   const [height, setHeight] = useState<string | number>(0);
 
   useEffect(() => {
-    if (props.items.length === 0) {
-      setHeight(0);
-    } else if (props.isOpen) {
-      setHeight("auto");
-      requestAnimationFrame(() => {
-        setHeight(contentRef.current?.scrollHeight || "auto");
-      });
-    } else {
+    if (!props.items || props.items.length === 0 || !props.isOpen) {
       setHeight(contentRef.current?.scrollHeight || 0);
       requestAnimationFrame(() => {
         setHeight(0);
       });
+    } else {
+      setHeight("auto");
+      requestAnimationFrame(() => {
+        setHeight(contentRef.current?.scrollHeight || "auto");
+      });
     }
-  }, [props, props.isOpen, props.items.length]);
+  }, [props.isOpen, props.items.length]);
 
   return (
     <div className="flex flex-col w-full">
@@ -55,6 +53,7 @@ const CollapseMenu: React.FC<CollapseMenuProps> = ({
       >
         <p className="text-text-2 font-kanit font-normal text-lg">
           {props.headerText}
+          {props.items.length > 0 ? ` (${props.items.length})` : ""}
         </p>
         <IoIosArrowDown
           className={`size-6 text-text-2 ${
@@ -70,7 +69,9 @@ const CollapseMenu: React.FC<CollapseMenuProps> = ({
         {props.items.map((item, index) => (
           <div
             key={index}
-            className="px-3 py-2 bg-white hover:bg-customgray-100 border border-b-customgray-300"
+            className={`px-3 py-2 bg-white hover:bg-customgray-100 border border-b-customgray-300 ${
+              props.items.length - 1 === index ? "rounded-b-[9px]" : ""
+            }`}
             onClick={item.onClick}
           >
             <div className="grid grid-cols-5 items-center justify-between p-2.5 gap-x-4">
@@ -85,7 +86,10 @@ const CollapseMenu: React.FC<CollapseMenuProps> = ({
                   <BsArrowRightSquare className="size-6 text-text-2" />
                 </div>
                 <p className="text-text-4 font-kanit font-light text-[8px]">
-                  {DateFormatter.getTimeDifference(item.createdDate)}
+                  {DateFormatter.getTimeDifference(
+                    item.createdDate,
+                    new Date()
+                  )}
                 </p>
               </div>
             </div>
