@@ -641,7 +641,7 @@ const OrderPage = () => {
                             )
                             .map((order, index) => {
                               return (
-                                <div className="flex flex-col gap-y-2">
+                                <div className="flex flex-col h-[100%] gap-y-2">
                                   <p className="text-center font-medium text-xl">
                                     ตระกร้าที่ {index + 1}
                                   </p>

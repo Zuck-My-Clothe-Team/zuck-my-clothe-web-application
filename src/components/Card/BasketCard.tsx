@@ -77,16 +77,18 @@ const BasketCard: React.FC<BasketCardProps> = (props) => {
             {props.data.weight} kg.
           </p>
         )}
-        {props.data.order_status === EOrderStatus.Processing && (
-          <span className="text-customgray-400 text-xs md:text-[14px] gap-x-2 flex items-center">
-            <AiFillClockCircle className="size-3 lg:size-4 text-#FFE286" />
-            เหลือเวลาอีก{" "}
-            {DateFormatter.getTimeDifference(
-              new Date(),
-              new Date(props.data.finished_at)
-            )}
-          </span>
-        )}
+        <span className="text-customgray-400 text-xs md:text-[14px] gap-x-2 flex items-center">
+          {props.data.order_status === EOrderStatus.Processing && (
+            <>
+              <AiFillClockCircle className="size-3 lg:size-4 text-#FFE286" />
+              เหลือเวลาอีก{" "}
+              {DateFormatter.getTimeDifference(
+                new Date(),
+                new Date(props.data.finished_at)
+              )}
+            </>
+          )}
+        </span>
       </div>
       <div className="flex flex-col gap-y-1 lg:gap-y-2 mt-4 px-4 text-xs md:text-[14px] "></div>
     </CardWrapper>
