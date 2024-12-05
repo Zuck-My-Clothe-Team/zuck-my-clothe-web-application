@@ -22,7 +22,6 @@ import {
   EOrderStatus,
   EServiceType,
   EWorkingStatus,
-  EWorkingStatusTH,
   IOrder,
   IOrderUpdateDTO,
 } from "../../interface/order.interface";
@@ -31,18 +30,31 @@ import { DateFormatter } from "../../utils/datetime";
 import { GetStatusOrderFromOrderDetails } from "../../utils/utils";
 import LoadingPage from "../LoadingPage";
 
+enum FWorkingStatus {
+  All = "All",
+  Waiting = "Waiting",
+  Pickup = "Pickup",
+  BackToStore = "BackToStore",
+  Processing = "Processing",
+  OutForDelivery = "OutForDelivery",
+  Completed = "Completed",
+  Canceled = "Canceled",
+}
+
+export enum FWorkingStatusTH {
+  All = "ทั้งหมด",
+  Waiting = "รอดำเนินการ",
+  Pickup = "รับผ้า",
+  BackToStore = "ผ้ากลับมาถึงร้าน",
+  Processing = "กำลังดำเนินการ",
+  OutForDelivery = "กำลังจัดส่ง",
+  Completed = "เสร็จสิ้น",
+  Canceled = "ยกเลิก",
+}
+
 const OrderPage = () => {
   const auth = useAuth();
   const { branch_id } = useParams<{ branch_id: string }>();
-  const [openStates, setOpenStates] = useState<boolean[]>([
-    true,
-    true,
-    false,
-    false,
-    false,
-    false,
-    false,
-  ]);
   const [searchValue, setSearchValue] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [branchName, setBranchName] = useState<string>("");
@@ -57,14 +69,9 @@ const OrderPage = () => {
   const [userData, setUserData] = useState<UserDetail[]>([]);
   const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
   const [loadingCancel, setLoadingCancel] = useState<boolean>(false);
-
-  const toggleOpen = (index: number) => {
-    setOpenStates((prev) => {
-      const newState = [...prev];
-      newState[index] = !newState[index];
-      return newState;
-    });
-  };
+  const [selectedFilter, setSelectedFilter] = useState<FWorkingStatus>(
+    FWorkingStatus.All
+  );
 
   const fetchBranchData = useCallback(async () => {
     try {
@@ -91,23 +98,25 @@ const OrderPage = () => {
           auth?.authContext?.role === Role.BranchManager &&
           branch_id
         ) {
-          res = await GetOrderByBranch(branch_id);
+          res = await GetOrderByBranch(branch_id, "paid");
         }
 
         if (!res) return;
 
         if (res.status != 200) throw new Error("Cannot Get Order Data");
-        const data = res.data;
+        const data: IOrder[] = res.data;
 
-        const filterDateData = data.filter(
-          (order: IOrder) =>
-            new Date(order.created_at).getTime() >=
-              new Date().getTime() - 1 * 24 * 60 * 60 * 1000 &&
-            !order.zuck_onsite &&
-            order.order_details.find(
-              (order) => order.order_status !== EOrderStatus.Expired
-            )
-        );
+        const filterDateData = data
+          .filter(
+            (order: IOrder) =>
+              new Date(order.created_at).getTime() >=
+                new Date().getTime() - 1 * 24 * 60 * 60 * 1000 &&
+              !order.zuck_onsite &&
+              order.order_details.find(
+                (order) => order.order_status !== EOrderStatus.Expired
+              )
+          )
+          .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
         setOrderData(filterDateData);
         setFilteredOrderData(filterDateData);
@@ -226,12 +235,6 @@ const OrderPage = () => {
       );
     }
 
-    if (searchValue || branchName) {
-      setOpenStates([false, false, false, false, false, false, false]);
-      setTimeout(() => {
-        setOpenStates([true, true, false, false, false, false, false]);
-      }, 300);
-    }
     setSelectedDeliveryData(undefined);
     setFilteredOrderData(filteredData);
   }, [orderData, searchValue, branchName]);
@@ -258,6 +261,7 @@ const OrderPage = () => {
   }, [auth?.authContext?.role, fetchBranchData, branch_id]);
 
   const items = useMemo(() => {
+    const allItems: CollapseMenuItems[] = [];
     const pendingItems: CollapseMenuItems[] = [];
     const pickupItems: CollapseMenuItems[] = [];
     const backToStoreItems: CollapseMenuItems[] = [];
@@ -266,7 +270,7 @@ const OrderPage = () => {
     const completedItems: CollapseMenuItems[] = [];
     const canceledItems: CollapseMenuItems[] = [];
 
-    filteredOrderData.forEach((order) => {
+    filteredOrderData.map((order) => {
       const item = {
         title: "ORDER #" + order.order_header_id.substring(0, 8),
         onClick: async () => {
@@ -282,7 +286,7 @@ const OrderPage = () => {
         },
         createdDate: new Date(order.created_at),
       };
-
+      allItems.push(item);
       const workingStatus = GetStatusOrderFromOrderDetails(order.order_details);
 
       switch (workingStatus) {
@@ -313,6 +317,7 @@ const OrderPage = () => {
     });
 
     return {
+      [FWorkingStatus.All]: allItems,
       [EWorkingStatus.Waiting]: pendingItems,
       [EWorkingStatus.Pickup]: pickupItems,
       [EWorkingStatus.BackToStore]: backToStoreItems,
@@ -351,6 +356,8 @@ const OrderPage = () => {
     }
   }, [selectedDeliveryData]);
 
+  if (loading) return <LoadingPage />;
+
   return (
     <>
       <div className="py-4">
@@ -358,15 +365,15 @@ const OrderPage = () => {
           คำสั่งซัก
         </h2>
 
-        {auth?.authContext?.role === Role.SuperAdmin && (
-          <div className="flex flex-col lg:flex-row justify-between gap-x-4 px-4 mt-4">
-            <Input
-              placeholder="ค้นหา ชื่อ นามสกุล เบอร์โทร หรือรหัส ORDER"
-              onChange={(e) => {
-                setSearchValue(e.target.value);
-              }}
-              className="w-1/4 mt-2 text-sm h-8"
-            />
+        <div className="flex flex-col lg:flex-row justify-between gap-x-4 mt-4">
+          <Input
+            placeholder="ค้นหา ชื่อ นามสกุล เบอร์โทร หรือรหัส ORDER"
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+            }}
+            className="w-1/4 mt-2 text-sm h-8"
+          />
+          {auth?.authContext?.role === Role.SuperAdmin && (
             <Select
               className="w-1/4 mt-2 text-sm h-8"
               placeholder="สาขา"
@@ -388,65 +395,35 @@ const OrderPage = () => {
                 </Select.Option>
               ))}
             </Select>
-          </div>
-        )}
+          )}
+        </div>
+        <div className="flex flex-row overflow-x-auto gap-x-4 mt-4">
+          {Object.keys(FWorkingStatus).map((key) => (
+            <div
+              className={`py-1 px-3 ${
+                selectedFilter === key
+                  ? "bg-background-2"
+                  : "bg-primaryblue-100"
+              } text-white rounded-[25px] cursor-pointer hover:bg-secondaryblue-200`}
+              onClick={() => {
+                setSelectedFilter(key as FWorkingStatus);
+                setSelectedDeliveryData(undefined);
+              }}
+            >
+              <p>
+                {FWorkingStatusTH[key as keyof typeof FWorkingStatusTH]} (
+                {items[key as keyof typeof FWorkingStatus].length})
+              </p>
+            </div>
+          ))}
+        </div>
         <div className="grid grid-cols-3 lg:grid-cols-7 gap-y-4 lg:gap-y-0 lg:gap-x-4 mt-7">
           <div className="col-span-3 lg:col-span-2">
             <CollapseMenu
-              isOpen={openStates[0]}
-              setOpen={() => toggleOpen(0)}
-              headerText={EWorkingStatusTH.Waiting}
-              items={items[EWorkingStatus.Waiting]}
-            />
-            <CollapseMenu
-              isOpen={openStates[1]}
-              setOpen={() => toggleOpen(1)}
-              headerText={EWorkingStatusTH.Pickup}
-              headerBgStyle={
-                "bg-primaryblue-300/90 hover:bg-primaryblue-300/80"
-              }
-              items={items[EWorkingStatus.Pickup]}
-            />
-            <CollapseMenu
-              isOpen={openStates[2]}
-              setOpen={() => toggleOpen(2)}
-              headerText={EWorkingStatusTH.BackToStore}
-              headerBgStyle={"bg-primaryblue-200 hover:bg-primaryblue-200/80"}
-              items={items[EWorkingStatus.BackToStore]}
-            />
-            <CollapseMenu
-              isOpen={openStates[3]}
-              setOpen={() => toggleOpen(3)}
-              headerText={EWorkingStatusTH.Processing}
-              headerBgStyle={
-                "bg-primaryblue-200/90 hover:bg-primaryblue-200/80"
-              }
-              items={items[EWorkingStatus.Processing]}
-            />
-            <CollapseMenu
-              isOpen={openStates[4]}
-              setOpen={() => toggleOpen(4)}
-              headerText={EWorkingStatusTH.OutForDelivery}
-              headerBgStyle={"bg-primaryblue-100 hover:bg-primaryblue-100/80"}
-              items={items[EWorkingStatus.OutForDelivery]}
-            />
-            <CollapseMenu
-              isOpen={openStates[5]}
-              setOpen={() => toggleOpen(5)}
-              headerText={EWorkingStatusTH.Completed}
-              headerBgStyle={
-                "bg-primaryblue-100/90 hover:bg-primaryblue-200/80"
-              }
-              items={items[EWorkingStatus.Completed]}
-            />
-            <CollapseMenu
-              isOpen={openStates[6]}
-              setOpen={() => toggleOpen(6)}
-              headerText={EWorkingStatusTH.Canceled}
-              headerBgStyle={
-                "bg-primaryblue-100/80 hover:bg-primaryblue-100/70"
-              }
-              items={items[EWorkingStatus.Canceled]}
+              isOpen={true}
+              setOpen={() => {}}
+              headerText={FWorkingStatusTH[selectedFilter]}
+              items={items[selectedFilter]}
             />
           </div>
           <div className="col-span-5 h-full">

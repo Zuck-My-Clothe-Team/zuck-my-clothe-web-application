@@ -22,8 +22,10 @@ export const GetStatusOrderFromOrderDetails = (
   const isComplete = detail
     .filter((d) => d.service_type !== EServiceType.Agents)
     .every((d) => d.order_status === EOrderStatus.Completed);
-  const isCancel = detail.every(
-    (d) => d.order_status === EOrderStatus.Canceled
+  const isCancel = detail.some(
+    (d) =>
+      d.order_status === EOrderStatus.Canceled ||
+      d.order_status === EOrderStatus.Expired
   );
   const isOutForDelivery = detail.some(
     (d) =>

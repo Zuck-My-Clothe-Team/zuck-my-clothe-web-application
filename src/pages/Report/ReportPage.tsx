@@ -1,5 +1,7 @@
+import { Input, Select } from "antd";
 import { lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import { GetAllBranch } from "../../api/branch.api";
 import {
   GetAllReport,
   GetReportByBranchId,
@@ -9,30 +11,38 @@ import { GetUserById } from "../../api/users.api";
 import CollapseMenu, { CollapseMenuItems } from "../../components/CollapseMenu";
 import DataShowingWrapper from "../../components/DataShowingWrapper";
 import StatusCheckBox from "../../components/StatusCheckBox";
+import { ToastNotification } from "../../components/Toast/Toast";
 import { useAuth } from "../../context/auth.context";
+import { IBranch } from "../../interface/branch.interface";
 import { IReport, ReportStatus } from "../../interface/report.interface";
 import { Role, UserDetail } from "../../interface/userdetail.interface";
 import { DateFormatter } from "../../utils/datetime";
 import { formatPhoneNumber } from "../../utils/utils";
 import LoadingPage from "../LoadingPage";
-import { IBranch } from "../../interface/branch.interface";
-import { GetAllBranch } from "../../api/branch.api";
-import { Input, Select } from "antd";
-import { ToastNotification } from "../../components/Toast/Toast";
 
 const ConfirmModal = lazy(
   () => import("../../components/Modal/confirmation.modal")
 );
 
+enum FReportStatus {
+  All = "All",
+  Pending = "Pending",
+  InProgress = "InProgress",
+  Fixed = "Fixed",
+  Canceled = "Canceled",
+}
+
+export enum FReportStatusTH {
+  All = "ทั้งหมด",
+  Pending = "รอดำเนินการ",
+  InProgress = "กำลังดำเนินการ",
+  Fixed = "แก้ไขแล้ว",
+  Canceled = "ยกเลิก",
+}
+
 const ReportPage = () => {
   const auth = useAuth();
   const { branch_id } = useParams<{ branch_id: string }>();
-  const [openStates, setOpenStates] = useState<boolean[]>([
-    true,
-    true,
-    false,
-    false,
-  ]);
   const [reportData, setReportData] = useState<IReport[]>([]);
   const [filteredReportData, setFilteredReportData] = useState<IReport[]>([]);
   const [branchData, setBranchData] = useState<IBranch[]>([]);
@@ -47,14 +57,9 @@ const ReportPage = () => {
   const [searchValue, setSearchValue] = useState<string>("");
   const [branchName, setBranchName] = useState<string>("");
   const [initialLoad, setInitialLoad] = useState(true);
-
-  const toggleOpen = (index: number) => {
-    setOpenStates((prev) => {
-      const newState = [...prev];
-      newState[index] = !newState[index];
-      return newState;
-    });
-  };
+  const [selectedFilter, setSelectedFilter] = useState<FReportStatus>(
+    FReportStatus.All
+  );
 
   const fetchReportAllData = useCallback(async () => {
     if (initialLoad) setLoading(true);
@@ -252,17 +257,11 @@ const ReportPage = () => {
       );
     }
 
-    if (searchValue || branchName) {
-      setOpenStates([false, false, false, false]);
-      setTimeout(() => {
-        setOpenStates([true, true, false, false]);
-      }, 300);
-    }
-
     setFilteredReportData(filteredData);
   }, [reportData, searchValue, userData, branchName]);
 
   const items = useMemo(() => {
+    const allItems: CollapseMenuItems[] = [];
     const pendingItems: CollapseMenuItems[] = [];
     const inProgressItems: CollapseMenuItems[] = [];
     const fixedItems: CollapseMenuItems[] = [];
@@ -276,6 +275,8 @@ const ReportPage = () => {
         },
         createdDate: new Date(report.created_at),
       };
+
+      allItems.push(item);
 
       switch (report.report_status) {
         case ReportStatus.Pending:
@@ -296,10 +297,11 @@ const ReportPage = () => {
     });
 
     return {
-      [ReportStatus.Pending]: pendingItems,
-      [ReportStatus.InProgress]: inProgressItems,
-      [ReportStatus.Fixed]: fixedItems,
-      [ReportStatus.Canceled]: canceledItems,
+      [FReportStatus.All]: allItems,
+      [FReportStatus.Pending]: pendingItems,
+      [FReportStatus.InProgress]: inProgressItems,
+      [FReportStatus.Fixed]: fixedItems,
+      [FReportStatus.Canceled]: canceledItems,
     };
   }, [filteredReportData, displayData]);
 
@@ -319,15 +321,15 @@ const ReportPage = () => {
           การแจ้งปัญหา
         </h2>
 
-        {auth?.authContext?.role === Role.SuperAdmin && (
-          <div className="flex flex-col lg:flex-row justify-between gap-x-4 px-4 mt-4">
-            <Input
-              placeholder="ค้นหา ชื่อ นามสกุล อีเมล เบอร์โทร หรือรหัส ISSUE"
-              onChange={(e) => {
-                setSearchValue(e.target.value);
-              }}
-              className="w-1/4 mt-2 text-sm h-8"
-            />
+        <div className="flex flex-col lg:flex-row justify-between gap-x-4 mt-4">
+          <Input
+            placeholder="ค้นหา ชื่อ นามสกุล อีเมล เบอร์โทร หรือรหัส ISSUE"
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+            }}
+            className="w-1/4 mt-2 text-sm h-8"
+          />
+          {auth?.authContext?.role === Role.SuperAdmin && (
             <Select
               className="w-1/4 mt-2 text-sm h-8"
               placeholder="สาขา"
@@ -349,38 +351,35 @@ const ReportPage = () => {
                 </Select.Option>
               ))}
             </Select>
-          </div>
-        )}
+          )}
+        </div>
+        <div className="flex flex-row overflow-x-auto gap-x-4 mt-4">
+          {Object.keys(FReportStatus).map((key) => (
+            <div
+              className={`py-1 px-3 ${
+                selectedFilter === key
+                  ? "bg-background-2"
+                  : "bg-primaryblue-100"
+              } text-white rounded-[25px] cursor-pointer hover:bg-secondaryblue-200`}
+              onClick={() => {
+                setSelectedFilter(key as FReportStatus);
+                setSelectedReportData(null);
+              }}
+            >
+              <p>
+                {FReportStatusTH[key as keyof typeof FReportStatus] + " "}(
+                {items[key as keyof typeof FReportStatus].length})
+              </p>
+            </div>
+          ))}
+        </div>
         <div className="grid grid-cols-3 lg:grid-cols-7 gap-y-4 lg:gap-y-0 lg:gap-x-4 mt-7">
           <div className="col-span-3 lg:col-span-2">
             <CollapseMenu
-              isOpen={openStates[0]}
-              setOpen={() => toggleOpen(0)}
-              headerText={"มาใหม่"}
-              items={items[ReportStatus.Pending]}
-            />
-            <CollapseMenu
-              isOpen={openStates[1]}
-              setOpen={() => toggleOpen(1)}
-              headerText={"กำลังดำเนินการ"}
-              headerBgStyle={"bg-primaryblue-200 hover:bg-primaryblue-200/80"}
-              items={items[ReportStatus.InProgress]}
-            />
-            <CollapseMenu
-              isOpen={openStates[2]}
-              setOpen={() => toggleOpen(2)}
-              headerText={"แก้ไขแล้ว"}
-              headerBgStyle={"bg-primaryblue-100 hover:bg-primaryblue-100/80"}
-              items={items[ReportStatus.Fixed]}
-            />
-            <CollapseMenu
-              isOpen={openStates[3]}
-              setOpen={() => toggleOpen(3)}
-              headerText={"ยกเลิก"}
-              headerBgStyle={
-                "bg-secondaryblue-300 hover:bg-secondaryblue-300/80"
-              }
-              items={items[ReportStatus.Canceled]}
+              isOpen={true}
+              setOpen={() => {}}
+              headerText={FReportStatusTH[selectedFilter]}
+              items={items[selectedFilter]}
             />
           </div>
           <div className="col-span-5 h-full">

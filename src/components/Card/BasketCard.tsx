@@ -6,6 +6,7 @@ import {
 } from "../../interface/order.interface";
 import { DateFormatter } from "../../utils/datetime";
 import CardWrapper from "./CardWrapper";
+import { FaCircleXmark } from "react-icons/fa6";
 
 type BasketCardProps = {
   title?: string;
@@ -47,6 +48,13 @@ const BasketCardData: {
         src="/images/clothes.png"
         className="aspect-auto my-4 size-16 md:size-28"
       />
+    ),
+  },
+  [EOrderStatus.Expired]: {
+    title: "ออเดอร์หมดอายุ",
+    description: "ออเดอร์หมดอายุ",
+    icon: (
+      <FaCircleXmark className="size-16 md:size-28 text-customred-1 my-4" />
     ),
   },
 };
