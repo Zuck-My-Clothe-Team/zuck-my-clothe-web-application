@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Select } from "antd";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import { GetAllOrder, GetOrderByBranch } from "../../api/order.api";
@@ -12,8 +12,8 @@ import {
 } from "../../interface/order.interface";
 import { Role } from "../../interface/userdetail.interface";
 import LoadingPage from "../LoadingPage";
-import LineChart from "./LineChart";
 import DonutChart from "./DonutChart";
+import LineChart from "./LineChart";
 
 interface IDashboardStat {
   order_number: string;
@@ -64,8 +64,6 @@ export default function ManagerDashboard() {
 
       setOrderData(res.data);
       setFilteredData(res.data);
-
-      console.log("fetched");
 
       setLoading(false);
     } catch (error) {
@@ -225,7 +223,6 @@ export default function ManagerDashboard() {
       data = data.filter((item) => item.zuck_onsite);
     }
 
-    console.log("filter");
     setFilteredData(data);
   }, [timeframe, zuckType, loading]);
 
