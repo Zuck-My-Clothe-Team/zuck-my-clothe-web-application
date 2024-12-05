@@ -209,7 +209,6 @@ const OrderPage = () => {
         return (
           user?.firstname.toLowerCase().includes(searchValue.toLowerCase()) ||
           user?.lastname.toLowerCase().includes(searchValue.toLowerCase()) ||
-          user?.email.toLowerCase().includes(searchValue.toLowerCase()) ||
           user?.phone.toLowerCase().includes(searchValue.toLowerCase()) ||
           order.order_header_id
             .toLowerCase()
@@ -233,7 +232,7 @@ const OrderPage = () => {
         setOpenStates([true, true, false, false, false, false, false]);
       }, 300);
     }
-
+    setSelectedDeliveryData(undefined);
     setFilteredOrderData(filteredData);
   }, [orderData, searchValue, branchName]);
 
@@ -362,7 +361,7 @@ const OrderPage = () => {
         {auth?.authContext?.role === Role.SuperAdmin && (
           <div className="flex flex-col lg:flex-row justify-between gap-x-4 px-4 mt-4">
             <Input
-              placeholder="ค้นหา ชื่อ นามสกุล อีเมล เบอร์โทร หรือรหัส ISSUE"
+              placeholder="ค้นหา ชื่อ นามสกุล เบอร์โทร หรือรหัส ORDER"
               onChange={(e) => {
                 setSearchValue(e.target.value);
               }}
