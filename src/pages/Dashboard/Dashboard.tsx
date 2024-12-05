@@ -14,6 +14,7 @@ import { Role } from "../../interface/userdetail.interface";
 import LoadingPage from "../LoadingPage";
 import DonutChart from "./DonutChart";
 import { ToastNotification } from "../../components/Toast/Toast";
+import LineChart from "./LineChart";
 
 interface IDashboardStat {
   order_number: string;
