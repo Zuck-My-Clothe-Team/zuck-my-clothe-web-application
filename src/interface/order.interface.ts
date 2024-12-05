@@ -3,7 +3,7 @@ import { UserDetail } from "./userdetail.interface";
 export type TWeight = 0 | 7 | 14 | 21;
 
 export const MachinePrice = {
-  0: 0,
+  0: 20,
   7: 50,
   14: 100,
   21: 150,
@@ -22,6 +22,35 @@ export enum EOrderStatus {
   Completed = "Completed",
   Canceled = "Canceled",
   Expired = "Expired",
+}
+
+export enum EWorkingStatus {
+  Waiting = "Waiting",
+  Pickup = "Pickup",
+  BackToStore = "BackToStore",
+  Processing = "Processing",
+  OutForDelivery = "OutForDelivery",
+  Completed = "Completed",
+  Canceled = "Canceled",
+}
+
+export enum EWorkingStatusTH {
+  Waiting = "รอดำเนินการ",
+  Pickup = "รับผ้า",
+  BackToStore = "ผ้ากลับมาถึงร้าน",
+  Processing = "กำลังดำเนินการ",
+  OutForDelivery = "กำลังจัดส่ง",
+  Completed = "เสร็จสิ้น",
+  Canceled = "ยกเลิก",
+}
+
+export enum EServiceTypeTH {
+  Washing = "เครื่องซัก",
+  Drying = "เครื่องอบ",
+  Pickup = "รับผ้า",
+  Delivery = "ส่งผ้า",
+  Agents = "ค่าน้ำยาซัก-ปรับผ้านุ่ม",
+  DeliveryOrPickup = "รับ-ส่งผ้า",
 }
 
 export interface IOrderDetail {
@@ -60,4 +89,11 @@ export interface IOrder {
   user_detail: UserDetail;
   user_id: string;
   zuck_onsite: boolean;
+}
+
+export interface IOrderUpdateDTO {
+  finished_at: string;
+  machine_serial: string | null;
+  order_basket_id: string;
+  order_status: EOrderStatus;
 }
