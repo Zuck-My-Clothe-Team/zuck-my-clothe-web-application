@@ -13,7 +13,9 @@ export async function GetAllMachine() {
 
 export async function GetAllMachineByBranch(branch_id: string) {
   try {
-    const result = await axiosInstance.get(`/machine/branch/${branch_id}`);
+    const result = await axiosInstance.get(
+      `/machine/available/branch/${branch_id}`
+    );
     return result;
   } catch (error) {
     console.error(`Error fetching machines for branch ${branch_id}:`, error);

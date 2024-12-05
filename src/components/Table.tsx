@@ -18,6 +18,7 @@ const TableInfo: React.FC<TableProps> = (props) => {
         columns={props.columns}
         loading={props.loading}
         dataSource={props.dataSource}
+        pagination={{ position: ["bottomCenter"] }}
       />
     </div>
   );
