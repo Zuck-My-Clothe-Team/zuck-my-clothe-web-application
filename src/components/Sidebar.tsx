@@ -42,11 +42,6 @@ const Sidebar = () => {
       path: getPath("order"),
     },
     {
-      icon: <BsCart style={{ fontSize: "130%" }} />,
-      label: "Delivery",
-      path: getPath("delivery"),
-    },
-    {
       icon: <FileExclamationFilled style={{ fontSize: "130%" }} />,
       label: "Report",
       path: getPath("report"),

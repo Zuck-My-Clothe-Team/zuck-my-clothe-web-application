@@ -400,7 +400,7 @@ const ReportPage = () => {
                   </p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-y-3 lg:gap-y-6 text-[16px] lg:text-xl text-black font-normal">
+                <div className="flex flex-col gap-y-1.5 lg:gap-y-3 text-[14px] lg:text-lg text-black font-normal">
                   <div className="flex flex-col lg:flex-row gap-x-6">
                     <h3 className="font-medium">
                       ชื่อ {user?.firstname + " " + user?.lastname}
@@ -416,13 +416,14 @@ const ReportPage = () => {
                         )}
                       <span className="text-gray-400 ml-4">
                         {DateFormatter.getTimeDifference(
-                          new Date(selectedReportData.created_at)
+                          new Date(selectedReportData.created_at),
+                          new Date()
                         )}
                       </span>
                     </p>
                     <p>
                       {"วันที่ " +
-                        DateFormatter.getDate(
+                        DateFormatter.getDateThaiFomatted(
                           new Date(selectedReportData.created_at)
                         )}
                     </p>
