@@ -65,6 +65,8 @@ export default function ManagerDashboard() {
       setOrderData(res.data);
       setFilteredData(res.data);
 
+      console.log("fetched");
+
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -194,7 +196,7 @@ export default function ManagerDashboard() {
     // console.log(dbData);
   }, [filteredData, timeframe, zuckType]);
 
-  useEffect(() => {
+  useMemo(() => {
     let data = orderData;
 
     if (timeframe == "day") {
@@ -223,9 +225,9 @@ export default function ManagerDashboard() {
       data = data.filter((item) => item.zuck_onsite);
     }
 
-    // console.log(data);
+    console.log("filter");
     setFilteredData(data);
-  }, [timeframe, zuckType]);
+  }, [timeframe, zuckType, loading]);
 
   const dataNumber = [
     {
