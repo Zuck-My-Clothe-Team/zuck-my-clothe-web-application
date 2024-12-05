@@ -5,7 +5,7 @@ import {
   MehFilled,
   ToolFilled,
 } from "@ant-design/icons";
-import { BsBasket3Fill, BsCart } from "react-icons/bs";
+import { BsBasket3Fill } from "react-icons/bs";
 import { IoIosLogOut } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/auth.context";
