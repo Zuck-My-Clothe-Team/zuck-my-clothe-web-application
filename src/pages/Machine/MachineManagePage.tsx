@@ -38,6 +38,9 @@ const MachineManagePage = () => {
   const [searchValue, setSearchValue] = useState<string>("");
   const [machineType, setMachineType] = useState<MachineType | null>(null);
   const [machineStatus, setMachineStatus] = useState<boolean | null>(null);
+  const [machineAvaliable, setMachineAvaliable] = useState<boolean | null>(
+    null
+  );
   const [openCreateMachineModal, setOpenCreateMachineModal] =
     useState<boolean>(false);
   const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
@@ -186,6 +189,18 @@ const MachineManagePage = () => {
       dataIndex: "weight",
       key: "weight",
     },
+    ...(auth?.authContext.role !== Role.SuperAdmin
+      ? [
+          {
+            title: "กำลังใช้งาน",
+            render: (row: IMachine, __: unknown, index: number) => {
+              return (
+                <div key={index}>{row.finished_at ? "ไม่ว่าง" : "ว่าง"}</div>
+              );
+            },
+          },
+        ]
+      : []),
     {
       title: "สถานะ",
       width: "10%",
@@ -281,13 +296,19 @@ const MachineManagePage = () => {
       }
       if (machineStatus !== null) {
         filterData = filterData.filter((data) => {
-          console.log(Boolean(machineStatus));
           return data.is_active == Boolean(machineStatus);
+        });
+      }
+      if (machineAvaliable !== null) {
+        filterData = filterData.filter((data) => {
+          return (
+            (data.finished_at !== null ? false : true) === machineAvaliable
+          );
         });
       }
       setFilterData(filterData);
     },
-    [datasource, machineStatus, machineType, loading]
+    [datasource, machineStatus, machineType, loading, machineAvaliable]
   );
 
   useMemo(() => {
@@ -304,7 +325,6 @@ const MachineManagePage = () => {
     <>
       <h3 className="text-text-1 text-4xl py-4">ระบบจัดการเครื่องซัก/อบ</h3>
       <section className="flex flex-col lg:flex-row justify-between my-4  py-6 lg:px-6">
-        {/* <div className="flex flex-col md:flex-row items-center w-full mb-4 md:mb-0"> */}
         <Input
           placeholder="ค้นหาเลขเครื่อง"
           size="large"
@@ -313,10 +333,6 @@ const MachineManagePage = () => {
           }}
           className="mb-4 lg:mb-0 lg:mr-4 w-full md:w-auto"
         />
-        {/* <Button type="primary" size="large" className="w-full md:w-auto">
-            <FaSearch className="text-white size-4" />
-          </Button>
-        </div> */}
         <div className="flex flex-col lg:flex-row justify-between gap-x-4">
           <Select
             className="w-full lg:w-1/2 mb-4 lg:mb-0"
@@ -329,6 +345,18 @@ const MachineManagePage = () => {
             <Select.Option value="">ทั้งหมด</Select.Option>
             <Select.Option value="Washer">เครื่องซักผ้า</Select.Option>
             <Select.Option value="Dryer">เครื่องอบผ้า</Select.Option>
+          </Select>
+          <Select
+            className="w-full lg:w-1/2 mb-4 lg:mb-0"
+            placeholder="กำลังใช้งาน"
+            size="large"
+            onChange={(value: string) => {
+              setMachineAvaliable(value === "" ? null : Boolean(value));
+            }}
+          >
+            <Select.Option value="">ทั้งหมด</Select.Option>
+            <Select.Option value={true}>ว่าง</Select.Option>
+            <Select.Option value={false}>ไม่ว่าง</Select.Option>
           </Select>
           <Select
             className="w-full lg:w-1/2 mb-4 lg:mb-0"
