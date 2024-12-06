@@ -266,35 +266,40 @@ const ReportPage = () => {
     const inProgressItems: CollapseMenuItems[] = [];
     const fixedItems: CollapseMenuItems[] = [];
     const canceledItems: CollapseMenuItems[] = [];
-    filteredReportData.forEach((report) => {
-      const item = {
-        title: "ISSUE #" + report.report_id.substring(0, 8),
-        onClick: async () => {
-          await displayData(report.user_id);
-          setSelectedReportData(report);
-        },
-        createdDate: new Date(report.created_at),
-      };
+    filteredReportData
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+      .forEach((report) => {
+        const item = {
+          title: "ISSUE #" + report.report_id.substring(0, 8),
+          onClick: async () => {
+            await displayData(report.user_id);
+            setSelectedReportData(report);
+          },
+          createdDate: new Date(report.created_at),
+        };
 
-      allItems.push(item);
+        allItems.push(item);
 
-      switch (report.report_status) {
-        case ReportStatus.Pending:
-          pendingItems.push(item);
-          break;
-        case ReportStatus.InProgress:
-          inProgressItems.push(item);
-          break;
-        case ReportStatus.Fixed:
-          fixedItems.push(item);
-          break;
-        case ReportStatus.Canceled:
-          canceledItems.push(item);
-          break;
-        default:
-          break;
-      }
-    });
+        switch (report.report_status) {
+          case ReportStatus.Pending:
+            pendingItems.push(item);
+            break;
+          case ReportStatus.InProgress:
+            inProgressItems.push(item);
+            break;
+          case ReportStatus.Fixed:
+            fixedItems.push(item);
+            break;
+          case ReportStatus.Canceled:
+            canceledItems.push(item);
+            break;
+          default:
+            break;
+        }
+      });
 
     return {
       [FReportStatus.All]: allItems,
