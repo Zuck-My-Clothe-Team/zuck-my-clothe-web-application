@@ -42,11 +42,9 @@ const BranchManagePage = () => {
   const columns = [
     {
       title: "ลำดับ",
-      dataIndex: "index",
-      key: "index",
-      render: (_: IBranch, __: unknown, index: number) => (
-        <span key={index}>{index + 1}</span>
-      ),
+      key: "key",
+      dataIndex: "key",
+      render: (key: number) => key + 1,
     },
     {
       title: "สาขา",
@@ -108,7 +106,10 @@ const BranchManagePage = () => {
       if (result.status !== 200) throw new Error("เกิดข้อผิดพลาด");
 
       const branchData: IBranch[] = result.data;
-      setDatasource(branchData);
+      const mappedData = branchData.map((data, index) => {
+        return { ...data, key: index };
+      });
+      setDatasource(mappedData);
       setLoading(false);
     } catch (err) {
       console.log(err);
