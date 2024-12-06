@@ -25,18 +25,21 @@ const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
 
   const onFinish = async (values: IUser) => {
     setLoading(true);
-    console.log(values);
-    if (!values.contracts || values.contracts.length === 0) {
+    if (
+      (!values.contracts || values.contracts.length === 0) &&
+      values.role === Role.Employee
+    ) {
       ToastNotification.error({
         config: {
           message: "ไม่สามารถเพิ่มข้อมูลได้",
           description: `กรุณาเลือกประเภทสัญญา`,
         },
       });
+      setLoading(false);
       return;
     }
 
-    if (!branch_id || !auth?.authContext.user_id) {
+    if (!branch_id && auth?.authContext.role === Role.BranchManager) {
       ToastNotification.error({
         config: {
           message: "ไม่สามารถเพิ่มข้อมูลได้",
@@ -47,18 +50,27 @@ const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
       return;
     }
 
-    const contracts: IContracts[] = values.contracts.map((contract) => {
-      return {
-        contract_id: "",
-        user_id: "",
-        branch_id: branch_id,
-        position_id: contract.position_id,
-        created_by: auth.authContext.user_id,
-        created_at: new Date().toISOString(),
-        deleted_at: "",
-        deleted_by: "",
-      };
-    });
+    if (!auth || !auth.authContext.user_id) {
+      setLoading(false);
+      return;
+    }
+
+    let contracts: IContracts[] = [];
+
+    if (values.contracts && values.contracts.length > 0) {
+      contracts = values.contracts.map((contract) => {
+        return {
+          contract_id: "",
+          user_id: "",
+          branch_id: branch_id || "",
+          position_id: contract.position_id,
+          created_by: auth.authContext.user_id,
+          created_at: new Date().toISOString(),
+          deleted_at: "",
+          deleted_by: "",
+        };
+      });
+    }
 
     values.contracts = contracts;
 
@@ -85,7 +97,6 @@ const CreateUserModal: React.FC<CreateUserModalType> = (props) => {
           description: `เกิดข้อผิดพลาด: ${error}`,
         },
       });
-      console.log(error);
       setLoading(false);
     }
   };
