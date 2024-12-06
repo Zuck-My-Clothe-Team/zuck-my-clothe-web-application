@@ -47,9 +47,9 @@ const UsersManagePage = () => {
   const columns: ColumnsType<IUser> = [
     {
       title: "ลำดับ",
-      dataIndex: "index",
-      key: "index",
-      render: (_: string, __: unknown, index: number) => index + 1,
+      key: "key",
+      dataIndex: "key",
+      render: (key: number) => key + 1,
     },
     {
       title: "ชื่อ",
@@ -190,9 +190,15 @@ const UsersManagePage = () => {
       if (result.data) {
         usersData = result.data;
       }
+      const mappedData = usersData.map((data, index) => {
+        return {
+          ...data,
+          key: index,
+        };
+      });
 
-      setFilterData(usersData);
-      setDatasource(usersData);
+      setFilterData(mappedData);
+      setDatasource(mappedData);
 
       setLoading(false);
     } catch (err) {
